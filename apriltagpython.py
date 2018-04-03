@@ -11,8 +11,8 @@ class myapriltag:
         self.tagdetector = None
 
     def createDetector(self,family = 'tag36h11',sigma=0.8,nthread =1,debug = False
-                       ,minarea = 400,thresholding = 'adaptive'):
-
+                       ,minarea = 400,thresholding = 'adaptive',downsampling = False):
+        self.downsampling = downsampling
         self.quad_sigma = sigma
         self.nthread = nthread
         self.minarea = minarea
@@ -23,8 +23,9 @@ class myapriltag:
 
     def detect(self,frame):
         gray = np.array(cv2.cvtColor(frame,cv2.COLOR_RGB2GRAY))
-        gray = misc.imresize(gray, [int(gray.shape[0] / 2), int(gray.shape[1] / 2)])
-        gray = ndimage.zoom(gray,2,order=0)
+        if self.downsampling:
+            gray = misc.imresize(gray, [int(gray.shape[0] / 2), int(gray.shape[1] / 2)])
+            gray = ndimage.zoom(gray,2,order=0)
         #gray = misc.imresize(gray, [int(gray.shape[0] * 2), int(gray.shape[1] * 2)])
         """
         1 blur

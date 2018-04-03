@@ -7,11 +7,9 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import animation
 
 
-def main():
-   camdet = multcamdet(4)
-   camdet.detectormult4()
 
-class multcamdet:
+
+class multcamdet(object):
     def __init__(self,n,debug = False):
         self.n = n
         self.videocaptures = []
@@ -22,6 +20,10 @@ class multcamdet:
         self.__filename = []
 
     def __create_videocapture(self):
+        """
+        初始化videocapture
+        :return:None
+        """
         for i in range(self.n):
             cap = cv2.VideoCapture()
             flag = cap.open(i)
@@ -34,17 +36,26 @@ class multcamdet:
                 exit(1)
 
     def __create_videowrite(self):
+        """
+        初始化videowriter
+        :return: None
+        """
         for i in range(self.n):
             out = cv2.VideoWriter(str(i)+'.avi',cv2.cv.CV_FOURCC('m','p','4','v'),10,(1920,1080))
             self.videowrite.append(out)
 
     def __create_fileRead(self):
+        """
+        批量读入文件
+        :return:
+        """
         for index in range(self.n):
             filename = '3dpicture/'+str(index)+'_'
             self.__filename.append(filename)
 
     def __get_grad(self):
         """
+        批量获取相机帧
         get grad using cam
         :return:
         """
@@ -55,6 +66,10 @@ class multcamdet:
         return True
 
     def __get_frame(self):
+        """
+        批量抓取图像
+        :return:
+        """
         for capture in self.videocaptures:
             flag,frame = capture.retrieve()
             if flag:
@@ -63,6 +78,11 @@ class multcamdet:
                 print ('can`t get frame')
 
     def __get_picture(self,index):
+        """
+        读入对应index的批量图像
+        :param index:
+        :return:
+        """
         for i in range(self.n):
             frame = cv2.imread(self.__filename[i]+str(index)+'.jpg')
             self.frames.append(frame)
@@ -146,9 +166,6 @@ class multcamdet:
                 plt.scatter(25, 58, 3)
                 plt.pause(0.001)
                 #plt.clf()
-    def on_key_press(self):
-        self.__del__()
-        exit(0)
     def detectormult4(self):
         self.__create_videocapture()
 
@@ -176,6 +193,10 @@ class multcamdet:
         for cap in self.videocaptures:
             cap.release()
 
+
+def main():
+   camdet = multcamdet(4)
+   camdet.detectormult4()
 
 if __name__ == '__main__':
     main()

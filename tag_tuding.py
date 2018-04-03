@@ -61,6 +61,7 @@ def getKmat(H):
 
 def get_pose_point(H):
     """
+    将空间坐标转换成相机坐标
     Trans the point to camera point
     :param H: homography
     :return:point
@@ -71,7 +72,8 @@ def get_pose_point(H):
 
 def get_pose_point_noroate(H):
     """
-    Trans the point to camera point but no rotated
+    将空间坐标转换成相机坐标但是不旋转
+    Trans the point to camera point but no rotating
     :param H: homography
     :return:point
     """

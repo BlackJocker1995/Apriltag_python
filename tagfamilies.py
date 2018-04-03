@@ -593,7 +593,8 @@ tag36h11 =  [
   0x00000002459068fb,
   0x0000000e83be4b73
 ]
-
+tag16h5 = []
+tag25h7 = []
 class tagclass(object):
     tagcode = None
     d = None
@@ -773,6 +774,20 @@ class tag36h11class(tagclass):
         super()
         self.tagcode = tag36h11
         self.d = 6 #len
+        self.debug = debug
+        self.hammingdis = hammingdis
+class tag16h5class(tagclass):
+    def __init__(self,hammingdis = 2,debug = False):
+        super()
+        self.tagcode = tag16h5
+        self.d = 4 #len
+        self.debug = debug
+        self.hammingdis = hammingdis
+class tag25h7class(tagclass):
+    def __init__(self,hammingdis = 2,debug = False):
+        super()
+        self.tagcode = tag25h7
+        self.d = 5 #len
         self.debug = debug
         self.hammingdis = hammingdis
 
