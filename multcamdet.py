@@ -140,7 +140,7 @@ class multcamdet:
             #print result
             if(len(result)==3):
                 aux =  tud.sovle_coord(result[2,2],result[0,2],result[1,2])
-                print aux
+                print( aux )
                 plt.subplot(111, projection='3d')
                 plt.scatter(aux[0], aux[1], aux[2])
                 plt.scatter(25, 58, 3)

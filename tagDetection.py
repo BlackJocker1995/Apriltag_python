@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-class TagDetection:
+class TagDetection(object):
 
     def __init__(self):
         self.good = False

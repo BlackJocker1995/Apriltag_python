@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from tagfamilies import tag36h11
-from TagDetection import TagDetection
+from tagDetection import TagDetection
 def decodeQuad(images, quad):
     pass
 

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from TagDetection import TagDetection
+from tagDetection import TagDetection
 """
 tag36h11
 """
