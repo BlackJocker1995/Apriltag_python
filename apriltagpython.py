@@ -20,6 +20,12 @@ class myapriltag:
         self.thresholding = thresholding
         if(family == 'tag36h11'):
             self.tagfamily = tf.tag36h11class(debug=self.debug)
+        elif(family == 'tag25h9'):
+            self.tagfamily = tf.tag25h9class(debug = self.debug)
+        elif(family == 'tag16h5'):
+            self.tagfamily = tf.tag16h5class(debug = self.debug)
+        else:
+            print("Do not support this tag")
 
     def detect(self,frame):
         gray = np.array(cv2.cvtColor(frame,cv2.COLOR_RGB2GRAY))

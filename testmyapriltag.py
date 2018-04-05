@@ -4,10 +4,10 @@ import numpy as np
 import tag_tuding as tud
 from scipy.optimize import leastsq
 ap = myapriltag()
-ap.createDetector(debug=True,sigma=1.4,thresholding='canny')
-filename = '3dpicture/2_2.jpg'
-#filename = './tag36h11.png'
-#filename = 'picture/1080p-40.jpg'
+ap.createDetector(debug=True,sigma=0.8,thresholding='adaptive',family='tag16h5')
+#filename = '3dpicture/2_2.jpg'
+filename = 'tag16.png'
+#filename = 'picture/1080p-30.jpg'
 frame = cv2.imread(filename)
 detections = ap.detect(frame)
 print('total find:',len(detections))

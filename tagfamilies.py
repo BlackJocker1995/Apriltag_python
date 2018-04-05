@@ -593,8 +593,75 @@ tag36h11 =  [
   0x00000002459068fb,
   0x0000000e83be4b73
 ]
-tag16h5 = []
-tag25h7 = []
+tag16h5 = [
+    0x000000000000231b,
+    0x0000000000002ea5,
+    0x000000000000346a,
+    0x00000000000045b9,
+    0x00000000000079a6,
+    0x0000000000007f6b,
+    0x000000000000b358,
+    0x000000000000e745,
+    0x000000000000fe59,
+    0x000000000000156d,
+    0x000000000000380b,
+    0x000000000000f0ab,
+    0x0000000000000d84,
+    0x0000000000004736,
+    0x0000000000008c72,
+    0x000000000000af10,
+    0x000000000000093c,
+    0x00000000000093b4,
+    0x000000000000a503,
+    0x000000000000468f,
+    0x000000000000e137,
+    0x0000000000005795,
+    0x000000000000df42,
+    0x0000000000001c1d,
+    0x000000000000e9dc,
+    0x00000000000073ad,
+    0x000000000000ad5f,
+    0x000000000000d530,
+    0x00000000000007ca,
+    0x000000000000af2e
+]
+tag25h9 = [
+            0x155cbf1,
+            0x1e4d1b6,
+            0x17b0b68,
+            0x1eac9cd,
+            0x12e14ce,
+            0x3548bb,
+            0x7757e6,
+            0x1065dab,
+            0x1baa2e7,
+            0xdea688,
+            0x81d927,
+            0x51b241,
+            0xdbc8ae,
+            0x1e50e19,
+            0x15819d2,
+            0x16d8282,
+            0x163e035,
+            0x9d9b81,
+            0x173eec4,
+            0xae3a09,
+            0x5f7c51,
+            0x1a137fc,
+            0xdc9562,
+            0x1802e45,
+            0x1c3542c,
+            0x870fa4,
+            0x914709,
+            0x16684f0,
+            0xc8f2a5,
+            0x833ebb,
+            0x59717f,
+            0x13cd050,
+            0xfa0ad1,
+            0x1b763b0,
+            0xb991ce
+        ]
 class tagclass(object):
     tagcode = None
     d = None
@@ -663,8 +730,8 @@ class tagclass(object):
         """
         wr = 0
         for r in range(d - 1, -1, -1):
-            for c in range(d):
-                b = r + d * c
+            for c in range(self.d):
+                b = r + self.d * c
                 wr = wr << 1
                 if ((w & (1 << b))) != 0:
                     wr |= 1
@@ -687,7 +754,7 @@ class tagclass(object):
 
         for r in range(4):
             index = 0
-            for tag in tag36h11:
+            for tag in self.tagcode:
                 dis = bin(tag ^ rcodes).count('1')
                 if (dis < besthamming):
                     besthamming = dis
@@ -783,10 +850,10 @@ class tag16h5class(tagclass):
         self.d = 4 #len
         self.debug = debug
         self.hammingdis = hammingdis
-class tag25h7class(tagclass):
+class tag25h9class(tagclass):
     def __init__(self,hammingdis = 2,debug = False):
         super()
-        self.tagcode = tag25h7
+        self.tagcode = tag25h9
         self.d = 5 #len
         self.debug = debug
         self.hammingdis = hammingdis
