@@ -25,7 +25,7 @@ def project(H,point):
     point[1] = (H[1, 0]*x+H[1, 1] *y + H[1, 2]) / z*1.0
     return point
 
-def projectarray(H):
+def project_array(H):
     ipoints = np.array([[-1,-1],
                         [1,-1],
                         [1,1],
@@ -49,8 +49,8 @@ def verify_z(x,y,R4,edge = 1060):
         return edge - h
 
 
-def getKmat(H):
-    campoint = projectarray(H)*1.0
+def get_Kmat(H):
+    campoint = project_array(H)*1.0
     opoints = np.array([[-1.0, -1.0, 0.0],
                         [1.0, -1.0, 0.0],
                         [1.0, 1.0, 0.0],
@@ -66,7 +66,7 @@ def get_pose_point(H):
     :param H: homography
     :return:point
     """
-    rvec, tvec =  getKmat(H)
+    rvec, tvec =  get_Kmat(H)
     point, jac = cv2.projectPoints(src, rvec, tvec, Kmat, disCoeffs)
     return np.int32(np.reshape(point,[4,2]))
 
@@ -77,7 +77,7 @@ def get_pose_point_noroate(H):
     :param H: homography
     :return:point
     """
-    rvec, tvec = getKmat(H)
+    rvec, tvec = get_Kmat(H)
     point, jac = cv2.projectPoints(src, np.zeros(rvec.shape), tvec, Kmat, disCoeffs)
     return np.int32(np.reshape(point,[4,2]))
 

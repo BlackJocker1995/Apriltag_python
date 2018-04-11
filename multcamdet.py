@@ -3,13 +3,7 @@ import numpy as np
 import apriltag
 import tag_tuding as tud
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import animation
-
-
-
-
-class multcamdet(object):
+class Multcamdet(object):
     def __init__(self,n,debug = False):
         self.n = n
         self.videocaptures = []
@@ -120,7 +114,7 @@ class multcamdet(object):
         return np.array(result)
 
 
-    def detectormult4_pic(self,num):
+    def detectormult_four_pic(self,num):
         self.__create_fileRead()
         ax = plt.subplot(111, projection='3d')
         ax.set_zlabel('z')
@@ -141,10 +135,10 @@ class multcamdet(object):
 
 
     def save_four_video(self):
-        self.create_videocapture()
-        self.create_videowrite()
-        while(self.get_grad()):
-            self.save_frame_avi()
+        self.__create_videocapture()
+        self.__create_videowrite()
+        while(self.__get_grad()):
+            self.__save_frame_avi()
             k = cv2.waitKey(100/10)
             print('save')
             if k == 5:
@@ -152,11 +146,11 @@ class multcamdet(object):
         for out in self.videowrite:
             out.release()
     def detectormult(self):
-        self.create_videocapture()
+        self.__create_videocapture()
 
-        while(self.get_grad()):
-            self.get_frame()
-            result = self.detector_id_dis()
+        while(self.__get_grad()):
+            self.__get_frame()
+            result = self.__detector_id_dis()
             #print result
             if(len(result)==3):
                 aux =  tud.sovle_coord(result[2,2],result[0,2],result[1,2])
@@ -166,7 +160,7 @@ class multcamdet(object):
                 plt.scatter(25, 58, 3)
                 plt.pause(0.001)
                 #plt.clf()
-    def detectormult4(self):
+    def detectormult_four(self):
         self.__create_videocapture()
 
         while (self.__get_grad()):
@@ -195,8 +189,8 @@ class multcamdet(object):
 
 
 def main():
-   camdet = multcamdet(4)
-   camdet.detectormult4()
+   camdet = Multcamdet(4)
+   camdet.detectormult_four()
 
 if __name__ == '__main__':
     main()

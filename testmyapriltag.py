@@ -1,16 +1,10 @@
 import cv2
-from apriltagpython import myapriltag
+from apriltagpython import Apriltag
 import numpy as np
 import tag_tuding as tud
 from scipy.optimize import leastsq
-ap = myapriltag()
-ap.createDetector(debug=True,sigma=0.8,thresholding='adaptive',family='tag16h5')
-#filename = '3dpicture/2_2.jpg'
-filename = 'tag16.png'
-#filename = 'picture/1080p-30.jpg'
-frame = cv2.imread(filename)
-detections = ap.detect(frame)
-print('total find:',len(detections))
+
+
 def func(p,x):
     k,b = p
     return k*(x+b)
@@ -20,16 +14,12 @@ def error(p,x,y):
 def run():
     array = []
     xi = []
-    detector = myapriltag()
-    detector.createDetector(debug=True, sigma=1.4, thresholding='canny')
+    detector = Apriltag()
+    detector.create_detector(debug=False, sigma=1.4, thresholding='canny')
     for index in range(3, 16):
         filename = 'picture/1080p-' + str(index) + '0' + '.jpg'
         frame = cv2.imread(filename)
-        window = 'Camera'
-        cv2.namedWindow(window)
-
         detections = detector.detect(frame)
-        # print (endtime-starttime)
 
         show = None
         if (len(detections) == 0):
@@ -79,3 +69,14 @@ def run():
         errors.append((caldis[i + 1] - caldis[i]) / 100)
     arrayerror = np.average(errors)
     print('arrayerror  ', arrayerror)
+
+if __name__ == '__main__':
+    ap = Apriltag()
+    ap.create_detector(debug=True,sigma=0.8,thresholding='canny',family='tag36h11')
+    filename = '3dpicture/2_2.jpg'
+    #filename = 'tag16.png'
+    #filename = 'picture/1080p-30.jpg'
+    frame = cv2.imread(filename)
+    detections = ap.detect(frame)
+    print('total find:',len(detections))
+
