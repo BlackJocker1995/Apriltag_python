@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import apriltag
-import tag_tuding as tud
+import tagUtils as tud
 import matplotlib.pyplot as plt
 class Multcamdet(object):
     def __init__(self,n,debug = False):

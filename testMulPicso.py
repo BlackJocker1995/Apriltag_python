@@ -1,15 +1,16 @@
 import cv2
 import apriltag
-import tag_tuding as tud
+import tagUtils as tud
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 from scipy.optimize import leastsq
+strname = '../3dpicture1'
 for index in range(0,5):
-    filename = '3dpicture/0_'+ str(index)+'.jpg'
-    filename1 = '3dpicture/1_' + str(index) + '.jpg'
-    filename2 = '3dpicture/2_' + str(index) + '.jpg'
-    filename3 = '3dpicture/3_' + str(index) + '.jpg'
+    filename = strname+'/0_'+ str(index)+'.jpg'
+    filename1 = strname+'/1_' + str(index) + '.jpg'
+    filename2 = strname+'/2_' + str(index) + '.jpg'
+    filename3 = strname+'/3_' + str(index) + '.jpg'
     frame= cv2.imread(filename)
     frame1= cv2.imread(filename1)
     frame2= cv2.imread(filename2)

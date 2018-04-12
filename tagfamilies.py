@@ -164,7 +164,7 @@ class Tagclass(object):
             if detection.good == True:
                 detection.addHomography()
                 detections.append(detection)
-        if self._debug:
+        if self._debug and len(points)!=0:
             plt.figure().set_size_inches(19.2, 10.8)
             plt.subplot(121)
             showpoint = np.array(points)

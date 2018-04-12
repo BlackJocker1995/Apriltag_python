@@ -1,7 +1,7 @@
 import cv2
 from apriltagpython import myapriltag
 import numpy as np
-import tag_tuding as tud
+import tagUtils as tud
 # ap = myapriltag()
 # ap.createDetector(debug=True)
 # #filename = '3dpicture/0_0.jpg'

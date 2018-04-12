@@ -105,7 +105,7 @@ class Apriltag(object):
                     if (area / cv2.contourArea(hull) > 0.8):
                         if (self._debug):
                             hulls.append(hull)
-                        quad = cv2.approxPolyDP(hull, 3, True)#maximum_area_inscribed
+                        quad = cv2.approxPolyDP(hull, 10, True)#maximum_area_inscribed
                         if (len(quad) == 4):
                             areaqued = cv2.contourArea(quad)
                             areahull = cv2.contourArea(hull)

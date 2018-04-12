@@ -38,15 +38,15 @@ def project_array(H):
 def sovle_coord(R1,R2,R3,edge = 1060):
     x = -(R2*R2 - R1*R1 - edge**2) / (2.0*edge)
     y = -(R3*R3 - R1*R1 - edge**2) / (2.0*edge)
-    z =  ((R1*R1 - x * x - y * y))**(0.5)-edge
-    return x,y,z
+    #z =  ((R1*R1 - x * x - y * y))**(0.5)-edge
+    return x,y#,z
 
 def verify_z(x,y,R4,edge = 1060):
         x = edge - x
         y = edge - y
         rand2 = x*x+y*y
         h = np.sqrt(R4**2 - rand2)
-        return edge - h
+        return edge - h+70
 
 
 def get_Kmat(H):
@@ -88,6 +88,14 @@ def average_pixel(point):
 def get_distance(H,t):
     points = get_pose_point_noroate(H)
     return average_dis(points,t)
+def get_min_distance(array_detections,t):
+    min = 65535;
+    for detection in array_detections:
+        dis = get_distance(detection.homography,t)
+        if dis < min:
+            min = dis
+    return min;
+
 def get_pixel(H):
     points = get_pose_point_noroate(H)
     return average_pixel(points)
