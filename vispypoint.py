@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# vispy: gallery 1
+# vispy: gallery 60
 
 """
-Demonstrating a cloud of points.
+Dynamic planar graph layout.
 """
-
+import cv2
+import tagUtils as tud
 import numpy as np
-
-from vispy import gloo
-from vispy import app
+from vispy import gloo, app
+from vispy.gloo import set_viewport, set_state, clear
 from vispy.util.transforms import perspective, translate, rotate
-
-vert = """
+import apriltagpython as ap
+vertp = """
 #version 120
 // Uniforms
 // ------------------------------------
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
-uniform float u_linewidth;
 uniform float u_antialias;
 uniform float u_size;
+uniform vec3 u_position;
 // Attributes
 // ------------------------------------
-attribute vec3  a_position;
 attribute vec4  a_fg_color;
 attribute vec4  a_bg_color;
+attribute float a_linewidth;
 attribute float a_size;
 // Varyings
 // ------------------------------------
@@ -37,11 +37,47 @@ varying float v_linewidth;
 varying float v_antialias;
 void main (void) {
     v_size = a_size * u_size;
-    v_linewidth = u_linewidth;
+    v_linewidth = a_linewidth;
     v_antialias = u_antialias;
     v_fg_color  = a_fg_color;
     v_bg_color  = a_bg_color;
-    gl_Position = u_projection * u_view * u_model * vec4(a_position,1.0);
+    gl_Position = u_projection * u_view * u_model *
+        vec4(u_position*u_size,1.0);
+    gl_PointSize = v_size + 2*(v_linewidth + 1.5*v_antialias);
+}
+"""
+
+vert = """
+#version 120
+// Uniforms
+// ------------------------------------
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_projection;
+uniform float u_antialias;
+uniform float u_size;
+// Attributes
+// ------------------------------------
+attribute vec3  a_position;
+attribute vec4  a_fg_color;
+attribute vec4  a_bg_color;
+attribute float a_linewidth;
+attribute float a_size;
+// Varyings
+// ------------------------------------
+varying vec4 v_fg_color;
+varying vec4 v_bg_color;
+varying float v_size;
+varying float v_linewidth;
+varying float v_antialias;
+void main (void) {
+    v_size = a_size * u_size;
+    v_linewidth = a_linewidth;
+    v_antialias = u_antialias;
+    v_fg_color  = a_fg_color;
+    v_bg_color  = a_bg_color;
+    gl_Position = u_projection * u_view * u_model *
+        vec4(a_position*u_size,1.0);
     gl_PointSize = v_size + 2*(v_linewidth + 1.5*v_antialias);
 }
 """
@@ -59,113 +95,15 @@ varying float v_linewidth;
 varying float v_antialias;
 // Functions
 // ------------------------------------
-// ----------------
-float disc(vec2 P, float size)
-{
-    float r = length((P.xy - vec2(0.5,0.5))*size);
-    r -= v_size/2;
-    return r;
-}
-// ----------------
-float arrow_right(vec2 P, float size)
-{
-    float r1 = abs(P.x -.50)*size + abs(P.y -.5)*size - v_size/2;
-    float r2 = abs(P.x -.25)*size + abs(P.y -.5)*size - v_size/2;
-    float r = max(r1,-r2);
-    return r;
-}
-// ----------------
-float ring(vec2 P, float size)
-{
-    float r1 = length((P.xy - vec2(0.5,0.5))*size) - v_size/2;
-    float r2 = length((P.xy - vec2(0.5,0.5))*size) - v_size/4;
-    float r = max(r1,-r2);
-    return r;
-}
-// ----------------
-float clober(vec2 P, float size)
-{
-    const float PI = 3.14159265358979323846264;
-    const float t1 = -PI/2;
-    const vec2  c1 = 0.2*vec2(cos(t1),sin(t1));
-    const float t2 = t1+2*PI/3;
-    const vec2  c2 = 0.2*vec2(cos(t2),sin(t2));
-    const float t3 = t2+2*PI/3;
-    const vec2  c3 = 0.2*vec2(cos(t3),sin(t3));
-    float r1 = length((P.xy- vec2(0.5,0.5) - c1)*size);
-    r1 -= v_size/3;
-    float r2 = length((P.xy- vec2(0.5,0.5) - c2)*size);
-    r2 -= v_size/3;
-    float r3 = length((P.xy- vec2(0.5,0.5) - c3)*size);
-    r3 -= v_size/3;
-    float r = min(min(r1,r2),r3);
-    return r;
-}
-// ----------------
-float square(vec2 P, float size)
-{
-    float r = max(abs(P.x -.5)*size,
-                  abs(P.y -.5)*size);
-    r -= v_size/2;
-    return r;
-}
-// ----------------
-float diamond(vec2 P, float size)
-{
-    float r = abs(P.x -.5)*size + abs(P.y -.5)*size;
-    r -= v_size/2;
-    return r;
-}
-// ----------------
-float vbar(vec2 P, float size)
-{
-    float r1 = max(abs(P.x -.75)*size,
-                   abs(P.x -.25)*size);
-    float r3 = max(abs(P.x -.5)*size,
-                   abs(P.y -.5)*size);
-    float r = max(r1,r3);
-    r -= v_size/2;
-    return r;
-}
-// ----------------
-float hbar(vec2 P, float size)
-{
-    float r2 = max(abs(P.y -.75)*size,
-                   abs(P.y -.25)*size);
-    float r3 = max(abs(P.x -.5)*size,
-                   abs(P.y -.5)*size);
-    float r = max(r2,r3);
-    r -= v_size/2;
-    return r;
-}
-// ----------------
-float cross(vec2 P, float size)
-{
-    float r1 = max(abs(P.x -.75)*size,
-                   abs(P.x -.25)*size);
-    float r2 = max(abs(P.y -.75)*size,
-                   abs(P.y -.25)*size);
-    float r3 = max(abs(P.x -.5)*size,
-                   abs(P.y -.5)*size);
-    float r = max(min(r1,r2),r3);
-    r -= v_size/2;
-    return r;
-}
+float marker(vec2 P, float size);
 // Main
 // ------------------------------------
 void main()
 {
     float size = v_size +2*(v_linewidth + 1.5*v_antialias);
     float t = v_linewidth/2.0-v_antialias;
-    float r = disc(gl_PointCoord, size);
-    // float r = square(gl_PointCoord, size);
-    // float r = ring(gl_PointCoord, size);
-    // float r = arrow_right(gl_PointCoord, size);
-    // float r = diamond(gl_PointCoord, size);
-    // float r = cross(gl_PointCoord, size);
-    // float r = clober(gl_PointCoord, size);
-    // float r = hbar(gl_PointCoord, size);
-    // float r = vbar(gl_PointCoord, size);
+    // The marker function needs to be linked with this shader
+    float r = marker(gl_PointCoord, size);
     float d = abs(r) - t;
     if( r > (v_linewidth/2.0+v_antialias))
     {
@@ -185,91 +123,242 @@ void main()
             gl_FragColor = mix(v_bg_color, v_fg_color, alpha);
     }
 }
+float marker(vec2 P, float size)
+{
+    float r = length((P.xy - vec2(0.5,0.5))*size);
+    r -= v_size/2;
+    return r;
+}
+"""
+
+vs = """
+uniform mat4 u_model;
+attribute vec3 a_position;
+attribute vec4 a_fg_color;
+attribute vec4 a_bg_color;
+attribute float a_size;
+attribute float a_linewidth;
+void main(){
+    gl_Position = u_model *vec4(a_position, 1.);
+}
+"""
+
+fs = """
+void main(){
+    gl_FragColor = vec4(0., 0., 0., 1.);
+}
 """
 
 
-# ------------------------------------------------------------ Canvas class ---
+zoom = 0.0008
 class Canvas(app.Canvas):
 
-    def __init__(self):
-        app.Canvas.__init__(self, keys='interactive', size=(800, 600))
+    def __init__(self, **kwargs):
+        # Initialize the canvas for real
+        app.Canvas.__init__(self, keys='interactive', size=(960, 960),
+                            **kwargs)
         ps = self.pixel_scale
-
-        # Create vertices
-        n = 1000000
-        data = np.zeros(n, [('a_position', np.float32, 3),
-                            ('a_bg_color', np.float32, 4),
-                            ('a_fg_color', np.float32, 4),
-                            ('a_size', np.float32, 1)])
-        data['a_position'] = 0.45 * np.random.randn(n, 3)
-        data['a_bg_color'] = np.random.uniform(0.85, 1.00, (n, 4))
+        #######################################
+        n = 8
+        data = np.zeros(n, dtype=[('a_position', np.float32, 3),
+                                  ('a_fg_color', np.float32, 4),
+                                  ('a_bg_color', np.float32, 4),
+                                  ('a_size', np.float32, 1),
+                                  ('a_linewidth', np.float32, 1),
+                                  ])
+        edges = np.array([[0, 1], [1, 2], [2, 3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]], dtype='uint32')
+        data['a_position'] = zoom*np.array([[-500,-500,0],[500.0,-500,0],[500,500,0],[-500,500,0],[-500,-500,1000],[500.0,-500,1000],[500,500,1000],[-500,500,1000]])
         data['a_fg_color'] = 0, 0, 0, 1
-        data['a_size'] = np.random.uniform(5*ps, 10*ps, n)
-        u_linewidth = 1.0
-        u_antialias = 1.0
+        color = np.random.uniform(0.5, 1., (n, 3))
+        data['a_bg_color'] = np.hstack((color, np.ones((n, 1))))
+        data['a_size'] = 12*np.ones(n)
+        data['a_linewidth'] = 1.*ps
+        u_antialias = 1
 
         self.translate = 5
-        self.program = gloo.Program(vert, frag)
-        self.view = translate((0, 0, -self.translate))
-        self.model = np.eye(4, dtype=np.float32)
-        self.projection = np.eye(4, dtype=np.float32)
-
-        self.apply_zoom()
-
-        self.program.bind(gloo.VertexBuffer(data))
-        self.program['u_linewidth'] = u_linewidth
-        self.program['u_antialias'] = u_antialias
-        self.program['u_model'] = self.model
-        self.program['u_view'] = self.view
-        self.program['u_size'] = 5 / self.translate
+        self.vbo = gloo.VertexBuffer(data)
 
         self.theta = 0
         self.phi = 0
+        self.index = gloo.IndexBuffer(edges)
+        self.view = np.eye(4, dtype=np.float32)
+        self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
+        self.projection = np.eye(4, dtype=np.float32)
 
+        self.program = gloo.Program(vert, frag)
+        self.program.bind(self.vbo)
+        self.program['u_size'] = 1
+        self.program['u_antialias'] = u_antialias
+        self.program['u_model'] = self.model
+        self.program['u_view'] = self.view
+        self.program['u_projection'] = self.projection
+        ###########################################
+        m=2
+        data1 = np.zeros(m, dtype=[
+                                  ('a_fg_color', np.float32, 4),
+                                  ('a_bg_color', np.float32, 4),
+                                  ('a_size', np.float32, 1),
+                                  ('a_linewidth', np.float32, 1),
+                                  ])
+        data1['a_fg_color'] = 0, 0, 0, 1
+        color1 = np.random.uniform(0.5, 1., (m, 3))
+        data1['a_bg_color'] = np.hstack((color1, np.ones((m, 1))))
+        data1['a_size'] = np.random.randint(size=m, low=8 * ps, high=20 * ps)
+        data1['a_linewidth'] = 1. * ps
+
+
+        self.program_e = gloo.Program(vs, fs)
+        self.program_e.bind(self.vbo)
+        self.program_e['u_model'] = self.model
+
+
+        ############################################################
+        self.vbo1 = gloo.VertexBuffer(data1)
+        self.program_p = gloo.Program(vertp, frag)
+        self.program_p.bind(self.vbo1)
+        self.program_p['u_position'] = zoom * np.array([[0, 0, 0]])
+        self.program_p['u_size'] = 1
+        self.program_p['u_antialias'] = u_antialias
+        self.program_p['u_model'] = self.model
+        self.program_p['u_view'] = self.view
+        self.program_p['u_projection'] = self.projection
+        self.num = 1
+        ############################################################
+        set_viewport(0, 0, *self.physical_size)
         gloo.set_state('translucent', clear_color='white')
-
         self.timer = app.Timer('auto', connect=self.on_timer, start=True)
-
+        ##############################################################
+        self.apriltag = ap.Apriltag()
+        self.apriltag.create_detector(thresholding='adaptive')
+        self.imageImdex = 0
+        self.imagenum = 655350000
+        self.frames = []
+        self.init_image()
+        ##############################################################
         self.show()
+    def on_mouse_wheel(self, event):
+        pass
+        #self.rotate_graph()
 
+    def on_mouse_move(self,event):
+       pass
+
+
+    def on_mouse_press(self, event):
+       pass
+    def on_mouse_release(self,event):
+        pass
+    def on_resize(self, event):
+        set_viewport(0, 0, *event.physical_size)
+
+    def on_timer(self, event):
+        self.change_point()
+        pass
     def on_key_press(self, event):
+
+        if event.text == 'w':
+            self.phi += 2
+            self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
+        if event.text == 's':
+            self.phi -= 2
+            self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
+        if event.text == 'a':
+            self.theta += 2
+            self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
+        if event.text == 'd':
+            self.theta -= 2
+            self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                                rotate(self.phi, (0, 1, 0)))
+
+        if event.text =='i':
+            self.change_point()
         if event.text == ' ':
             if self.timer.running:
                 self.timer.stop()
             else:
                 self.timer.start()
-
-    def on_timer(self, event):
-        self.theta += .5
-        self.phi += .5
-        self.model = np.dot(rotate(self.theta, (0, 0, 1)),
-                            rotate(self.phi, (0, 1, 0)))
         self.program['u_model'] = self.model
-        self.update()
-
-    def on_resize(self, event):
-        self.apply_zoom()
-
-    def on_mouse_wheel(self, event):
-        self.translate -= event.delta[1]
-        self.translate = max(2, self.translate)
-        self.view = translate((0, 0, -self.translate))
-
-        self.program['u_view'] = self.view
-        self.program['u_size'] = 5 / self.translate
+        self.program_e['u_model'] = self.model
+        self.program_p['u_model'] = self.model
         self.update()
 
     def on_draw(self, event):
-        gloo.clear()
+        clear(color=True, depth=True)
+        self.program_e.draw('lines', self.index)
         self.program.draw('points')
+        self.program_p.draw('points')
 
-    def apply_zoom(self):
-        gloo.set_viewport(0, 0, self.physical_size[0], self.physical_size[1])
-        self.projection = perspective(45.0, self.size[0] /
-                                      float(self.size[1]), 1.0, 1000.0)
-        self.program['u_projection'] = self.projection
+    def init_image(self):
+        capture = cv2.VideoCapture('../video/0.avi')
+        capture1 = cv2.VideoCapture('../video/1.avi')
+        capture2 = cv2.VideoCapture('../video/2.avi')
+        capture3 = cv2.VideoCapture('../video/3.avi')
+
+        while(capture.grab() and capture1.grab()and capture2.grab() and capture3.grab()):
+            flag,frame = capture.retrieve()
+            flag,frame1 = capture.retrieve()
+            flag,frame2= capture.retrieve()
+            flag,frame3 = capture.retrieve()
+            self.frames.append(np.array([frame,frame1,frame2,frame3]))
 
 
+    def detector_im(self):
+        frametmp = self.frames[self.imageImdex]
+        detections = self.apriltag.detect(frametmp[3])
+        detections1 = self.apriltag.detect(frametmp[2])
+        detections2 = self.apriltag.detect(frametmp[1])
+        detections3 = self.apriltag.detect(frametmp[0])
+        tmp = 121938.0923
+        add = 0
+        dis = tud.get_min_distance(detections, tmp) + add
+        dis1 = tud.get_min_distance(detections1, tmp) + add
+        dis2 = tud.get_min_distance(detections2, tmp)
+        dis3 = tud.get_min_distance(detections3, tmp) + add
+        dege = 1000
+        x, y, z = tud.sovle_coord(dis, dis1, dis3, dege)
+        x1, y1, z1 = tud.sovle_coord(dis3, dis, dis2, dege)
+        x2, y2, z2 = tud.sovle_coord(dis2, dis3, dis1, dege)
+
+        nz = tud.verify_z(x, y, dis2, dege)
+        nz1 = tud.verify_z(x1, y1, dis1, dege)
+        nz2 = tud.verify_z(x2, y2, dis, dege)
+
+        x1, y1, nz1 = [y1, dege - x1, nz1]
+        x2, y2, nz2 = [dege - x2, dege - y2, nz2]
+
+        point = np.array([x, y, nz])
+        point1 = np.array([x1, y1, nz1])
+        point2 = np.array([x2, y2, nz2])
+
+        print(point)
+        print(point1)
+        print(point2)
+        print((point + point2 + point1) / 3)
+        print()
+        return (point + point2 + point1) / 3
+
+    def rotate_graph(self):
+        self.theta += 2
+        self.phi += 2
+        self.model = np.dot(rotate(self.theta, (0, 0, 1)),
+                            rotate(self.phi, (0, 1, 0)))
+        self.program['u_model'] = self.model
+        self.program_e['u_model'] = self.model
+        self.program_p['u_model'] = self.model
+        self.update()
+
+    def change_point(self):
+        if self.imageImdex < self.imagenum:
+            x,y,z = self.detector_im()
+            self.program_p['u_position'] =zoom*np.array([x,y,z])
+            self.imageImdex = self.imageImdex+1
+            self.update()
+        else:
+            print('no more picture')
 if __name__ == '__main__':
-    c = Canvas()
+    c = Canvas(title="Graph")
     app.run()
