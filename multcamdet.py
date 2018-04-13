@@ -3,6 +3,7 @@ import numpy as np
 import apriltag
 import tagUtils as tud
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 class Multcamdet(object):
     def __init__(self,n,debug = False):
         self.n = n
@@ -172,9 +173,9 @@ class Multcamdet(object):
             ax.set_zlabel('z')
             ax.set_ylabel('y')
             ax.set_xlabel('x')
-            ax.set_ylim(-20,120)
-            ax.set_zlim(-20, 120)
-            ax.set_xlim(-20, 120)
+            ax.set_ylim(-200,1200)
+            ax.set_zlim(-200, 1200)
+            ax.set_xlim(-200, 1200)
             if len(result)==4:
                 x,y,z = tud.sovle_coord(result[0, 2], result[1, 2], result[3, 2],edge=1100)
                 R4 = result[2,2]

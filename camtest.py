@@ -7,7 +7,7 @@ import apriltag
 import tagUtils as tud
 import numpy as np
 import  datetime
-
+import apriltagpython as ap
 
 
 def project(H,x,y):
@@ -17,23 +17,18 @@ def main():
     cap = cv2.VideoCapture(3)
     cap.set(3,1920)
     cap.set(4,1080)
-    fps = 24
-    size = (int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)),int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)))
-    outvideo = cv2.VideoWriter('savedor.avi',cv2.cv.CV_FOURCC('m','p','4','v'),fps,(1920,1080))
     window = 'Camera'
     cv2.namedWindow(window)
 
-    detector = apriltag.Detector()
-
+    detector = ap.Apriltag()
+    detector.create_detector(sigma=0.8, thresholding='canny', debug=False, downsampling=False)
 
     while cap.grab():
         success, frame = cap.retrieve()
         if not success:
             break
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         starttime = datetime.datetime.now()
-        detections = detector.detect(gray, return_image=False)
+        detections = detector.detect(frame)
         endtime = datetime.datetime.now()
         #print (endtime-starttime)
 
@@ -57,19 +52,15 @@ def main():
                 #              tuple(dete_point[edges[j, 0]]),
                 #              tuple(dete_point[edges[j, 1]]),
                 #              color=(0,255,0))
-                print 'dis:' , dis
+                print ('dis:' , dis)
 
         ########################
         num_detections = len(detections)
 
-        outvideo.write(show)
         cv2.imshow(window, show)
-        k = cv2.waitKey(1000/int(fps))
-
+        k = cv2.waitKey(1000)
         if k == 27:
             break
-
-    outvideo.release()
     cap.release()
 
 if __name__ == '__main__':

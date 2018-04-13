@@ -38,15 +38,15 @@ def project_array(H):
 def sovle_coord(R1,R2,R3,edge = 1060):
     x = -(R2*R2 - R1*R1 - edge**2) / (2.0*edge)
     y = -(R3*R3 - R1*R1 - edge**2) / (2.0*edge)
-    #z =  ((R1*R1 - x * x - y * y))**(0.5)-edge
-    return x,y#,z
+    z =  ((R1*R1 - x * x - y * y))**(0.5)-edge
+    return x,y,z
 
 def verify_z(x,y,R4,edge = 1060):
         x = edge - x
         y = edge - y
         rand2 = x*x+y*y
         h = np.sqrt(R4**2 - rand2)
-        return edge - h+70
+        return edge - h
 
 
 def get_Kmat(H):

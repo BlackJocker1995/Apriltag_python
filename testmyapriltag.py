@@ -72,9 +72,9 @@ def run():
 
 if __name__ == '__main__':
     ap = Apriltag()
-    ap.create_detector(debug=False,sigma=1,thresholding='adaptive',family='tag36h11')
-    filename = '../3dpicture4/2_0.jpg'
-    #filename = 'tag16.png'
+    ap.create_detector(debug=True,sigma=0.8,thresholding='canny',family='tag36h11')
+    #filename = '../3dpicture4/2_0.jpg'
+    filename = 'pic2.jpg'
     #filename = 'picture/1080p-30.jpg'
     frame = cv2.imread(filename)
     detections = ap.detect(frame)

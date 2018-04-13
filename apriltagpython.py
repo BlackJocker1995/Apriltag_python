@@ -47,7 +47,7 @@ class Apriltag(object):
         """
         time_start = time.time()
         if(self._thresholding=='canny'):
-            img = cv2.Canny(img,150,300,apertureSize=3)
+            img = cv2.Canny(img,50,350,apertureSize=3)
             if(self._debug):
                 print("Canny")
         elif(self._thresholding=='adaptive'):
