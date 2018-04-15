@@ -91,6 +91,7 @@ def get_distance(H,t):
 def get_min_distance(array_detections,t):
     min = 65535;
     for detection in array_detections:
+        #print(detection.id)
         dis = get_distance(detection.homography,t)
         if dis < min:
             min = dis

@@ -54,6 +54,7 @@ class Apriltag(object):
             img = np.array(cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 9, 5),dtype='uint8')
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(2,2))
             img = cv2.morphologyEx(img, cv2.MORPH_OPEN,kernel)
+#            img = cv2.GaussianBlur(img, (7, 7), self._quad_sigma)
             if (self._debug):
                 print("Adaptive thresholding")
 

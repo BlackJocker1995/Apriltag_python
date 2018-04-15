@@ -1,16 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# vispy: gallery 60
-
-"""
-Dynamic planar graph layout.
-"""
 import cv2
 import tagUtils as tud
 import numpy as np
 from vispy import gloo, app
-from vispy.gloo import set_viewport, set_state, clear
-from vispy.util.transforms import perspective, translate, rotate
+from vispy.gloo import set_viewport, clear
+from vispy.util.transforms import  rotate
 import apriltagpython as ap
 vertp = """
 #version 120
@@ -230,9 +225,9 @@ class Canvas(app.Canvas):
         self.timer = app.Timer('auto', connect=self.on_timer, start=True)
         ##############################################################
         self.apriltag = ap.Apriltag()
-        self.apriltag.create_detector(thresholding='canny',debug=False)
+        self.apriltag.create_detector(thresholding='adaptive',debug=False)
         self.imageImdex = 0
-        self.imagenum = 1080
+        self.imagenum = 5
         self.frames = []
         self.init_image()
         ##############################################################
@@ -253,7 +248,7 @@ class Canvas(app.Canvas):
         set_viewport(0, 0, *event.physical_size)
 
     def on_timer(self, event):
-        self.change_point()
+        #self.rotate_graph()
         pass
     def on_key_press(self, event):
 
@@ -293,17 +288,18 @@ class Canvas(app.Canvas):
         self.program_p.draw('points')
 
     def init_image(self):
-        capture = cv2.VideoCapture('../video/0.avi')
-        capture1 = cv2.VideoCapture('../video/1.avi')
-        capture2 = cv2.VideoCapture('../video/2.avi')
-        capture3 = cv2.VideoCapture('../video/3.avi')
-        while(capture.grab() and capture1.grab()and capture2.grab() and capture3.grab()):
-            flag,frame = capture.retrieve()
-            flag,frame1 = capture1.retrieve()
-            flag,frame2= capture2.retrieve()
-            flag,frame3 = capture3.retrieve()
+        strname = '../3dpicture7'
+        for index in range(0, 5):
+            filename = strname + '/0_' + str(index) + '.jpg'
+            filename1 = strname + '/1_' + str(index) + '.jpg'
+            filename2 = strname + '/2_' + str(index) + '.jpg'
+            filename3 = strname + '/3_' + str(index) + '.jpg'
+            frame = cv2.imread(filename)
+            frame1 = cv2.imread(filename1)
+            frame2 = cv2.imread(filename2)
+            frame3 = cv2.imread(filename3)
             self.frames.append(np.array([frame,frame1,frame2,frame3]))
-        self.imagenum = len(self.frames)
+
 
     def detector_im(self):
         frametmp = self.frames[self.imageImdex]
@@ -314,10 +310,10 @@ class Canvas(app.Canvas):
         if (len(detections)<1 or len(detections1)<1 or len(detections2)<1 or len(detections3)<1):
             return np.array([0,0,0])
         tmp = 121938.0923
-        add = 0
+        add = 57
         dis = tud.get_min_distance(detections, tmp) + add
         dis1 = tud.get_min_distance(detections1, tmp) + add
-        dis2 = tud.get_min_distance(detections2, tmp)
+        dis2 = tud.get_min_distance(detections2, tmp) + add
         dis3 = tud.get_min_distance(detections3, tmp) + add
         dege = 1000
         x, y, z = tud.sovle_coord(dis, dis1, dis3, dege)
@@ -333,9 +329,9 @@ class Canvas(app.Canvas):
 
         print(point)
         print(point2)
-        print((point + point2) / 2)
+        print((point + point2 ) / 2)
         print()
-        return (point + point2) / 2
+        return (point + point2 ) / 2
 
     def rotate_graph(self):
         self.theta += 2
@@ -350,12 +346,8 @@ class Canvas(app.Canvas):
     def change_point(self):
         if self.imageImdex < self.imagenum:
             x,y,z = self.detector_im()
-            if (x!=0 and y!=0 and z!=0):
-                self.program_p['u_position'] =zoom*np.array([x,y,z])
-                self.update()
-            self.imageImdex = self.imageImdex + 1
+            self.program_p['u_position'] =zoom*np.array([x,y,z])
+            self.imageImdex = self.imageImdex+1
+            self.update()
         else:
             print('no more picture')
-if __name__ == '__main__':
-    c = Canvas(title="Graph")
-    app.run()
