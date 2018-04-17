@@ -11,7 +11,7 @@ import numpy as np
 from vispy import gloo, app
 from vispy.gloo import set_viewport, set_state, clear
 from vispy.util.transforms import perspective, translate, rotate
-import apriltagpython as ap
+import apriltag as ap
 vertp = """
 #version 120
 // Uniforms
@@ -353,7 +353,7 @@ class Canvas(app.Canvas):
             if (x!=0 and y!=0 and z!=0):
                 self.program_p['u_position'] =zoom*np.array([x,y,z])
                 self.update()
-            self.imageImdex = self.imageImdex + 1
+            self.imageImdex += 1
         else:
             print('no more picture')
 if __name__ == '__main__':

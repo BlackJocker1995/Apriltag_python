@@ -1,5 +1,5 @@
 import cv2
-from apriltagpython import myapriltag
+from apriltag import myapriltag
 import numpy as np
 import tagUtils as tud
 # ap = myapriltag()

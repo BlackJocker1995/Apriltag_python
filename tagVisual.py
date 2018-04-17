@@ -6,7 +6,7 @@ import numpy as np
 from vispy import gloo, app
 from vispy.gloo import set_viewport, clear
 from vispy.util.transforms import  rotate
-import apriltagpython as ap
+import apriltag as ap
 vertp = """
 #version 120
 // Uniforms
@@ -288,8 +288,8 @@ class Canvas(app.Canvas):
         self.program_p.draw('points')
 
     def init_image(self):
-        strname = '../3dpicture7'
-        for index in range(0, 5):
+        strname = '../3dpicture'
+        for index in range(0, self.imagenum):
             filename = strname + '/0_' + str(index) + '.jpg'
             filename1 = strname + '/1_' + str(index) + '.jpg'
             filename2 = strname + '/2_' + str(index) + '.jpg'
@@ -308,14 +308,14 @@ class Canvas(app.Canvas):
         detections2 = self.apriltag.detect(frametmp[1])
         detections3 = self.apriltag.detect(frametmp[0])
         if (len(detections)<1 or len(detections1)<1 or len(detections2)<1 or len(detections3)<1):
-            return np.array([0,0,0])
+            return np.array([0,0,0,0])
         tmp = 121938.0923
-        add = 57
+        add = 0
         dis = tud.get_min_distance(detections, tmp) + add
         dis1 = tud.get_min_distance(detections1, tmp) + add
         dis2 = tud.get_min_distance(detections2, tmp) + add
         dis3 = tud.get_min_distance(detections3, tmp) + add
-        dege = 1000
+        dege = 1050
         x, y, z = tud.sovle_coord(dis, dis1, dis3, dege)
         x2, y2, z2 = tud.sovle_coord(dis2, dis3, dis1, dege)
 
@@ -324,8 +324,8 @@ class Canvas(app.Canvas):
 
         x2, y2, nz2 = [dege - x2, dege - y2, nz2]
 
-        point = np.array([x, y, nz])
-        point2 = np.array([x2, y2, nz2])
+        point = np.array([x, y, nz,z])
+        point2 = np.array([x2, y2, nz2,z2])
 
         print(point)
         print(point2)
@@ -345,7 +345,7 @@ class Canvas(app.Canvas):
 
     def change_point(self):
         if self.imageImdex < self.imagenum:
-            x,y,z = self.detector_im()
+            x,y,z,t= self.detector_im()
             self.program_p['u_position'] =zoom*np.array([x,y,z])
             self.imageImdex = self.imageImdex+1
             self.update()

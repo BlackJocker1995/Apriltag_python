@@ -1,5 +1,5 @@
 import cv2
-from apriltagpython import Apriltag
+from apriltag import Apriltag
 import numpy as np
 import tagUtils as tud
 from scipy.optimize import leastsq

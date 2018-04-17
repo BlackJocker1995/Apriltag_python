@@ -1,7 +1,7 @@
 import numpy as np
 import  cv2
 import math
-
+from scipy.optimize import fsolve
 ss = 0.5
 src = np.array([[-ss, -ss, 0],
                     [ss, -ss, 0],
@@ -38,13 +38,14 @@ def project_array(H):
 def sovle_coord(R1,R2,R3,edge = 1060):
     x = -(R2*R2 - R1*R1 - edge**2) / (2.0*edge)
     y = -(R3*R3 - R1*R1 - edge**2) / (2.0*edge)
-    z =  ((R1*R1 - x * x - y * y))**(0.5)-edge
+    z =  (np.sqrt(R1*R1 - x * x - y * y))-edge
     return x,y,z
+
 
 def verify_z(x,y,R4,edge = 1060):
         x = edge - x
         y = edge - y
-        rand2 = x*x+y*y
+        rand2 = x**2+y**2
         h = np.sqrt(R4**2 - rand2)
         return edge - h
 

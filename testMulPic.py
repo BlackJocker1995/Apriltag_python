@@ -1,5 +1,5 @@
 import cv2
-import apriltagpython as ap
+import apriltag as ap
 import tagUtils as tud
 import numpy as np
 import datetime
