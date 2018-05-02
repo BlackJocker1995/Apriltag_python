@@ -11,7 +11,7 @@ class Multcamdet(object):
         self.videowrite = []
         self.frames = []
         self.debug = debug
-        self.detector = apriltag.Detector()
+        self.detector = apriltag.Apriltag().create_detector()
         self.__filename = []
 
     def __create_videocapture(self):

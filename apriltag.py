@@ -10,8 +10,7 @@ class Apriltag(object):
         self.tagfamily = None
         self.tagdetector = None
 
-    def create_detector(self,family = 'tag36h11',sigma=0.8,nthread =1,debug = False
-                       ,minarea = 400,thresholding = 'adaptive',downsampling = False):
+    def create_detector(self,family = 'tag36h11',sigma=0.8,nthread =1,debug = False,minarea = 400,thresholding = 'adaptive',downsampling = False):
         self._downsampling = downsampling
         self._quad_sigma = sigma
         self._nthread = nthread

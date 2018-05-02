@@ -72,11 +72,23 @@ def run():
 
 if __name__ == '__main__':
     ap = Apriltag()
-    ap.create_detector(debug=True,sigma=1.4,thresholding='adaptive',family='tag36h11')
+    ap.create_detector(debug=False,sigma=1.4,thresholding='canny',family='tag36h11')
     filename = '../3dpicture7/2_0.jpg'
-    #filename = 'pic2.jpg'
     #filename = 'picture/1080p-30.jpg'
     frame = cv2.imread(filename)
     detections = ap.detect(frame)
+    # show = frame
+    # edges = np.array([[0, 1],
+    #                   [1, 2],
+    #                   [2, 3],
+    #                   [3, 0]])
+    # for detection in detections:
+    #     point = tud.get_pose_point(detection.homography)
+    #     for j in range(4):
+    #         cv2.line(show, tuple(point[edges[j, 0]]), tuple(point[edges[j, 1]]), (0, 0, 255), 2)
+    # cv2.imshow("Point", show)
+    # k = cv2.waitKey(10000)
+    # if k == 27:
+    #     exit(0)
     print('total find:',len(detections))
 

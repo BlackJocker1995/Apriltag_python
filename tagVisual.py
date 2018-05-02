@@ -7,6 +7,7 @@ from vispy import gloo, app
 from vispy.gloo import set_viewport, clear
 from vispy.util.transforms import  rotate
 import apriltag as ap
+import time
 vertp = """
 #version 120
 // Uniforms
@@ -288,7 +289,7 @@ class Canvas(app.Canvas):
         self.program_p.draw('points')
 
     def init_image(self):
-        strname = '../3dpicture'
+        strname = '../3dpicture7'
         for index in range(0, self.imagenum):
             filename = strname + '/0_' + str(index) + '.jpg'
             filename1 = strname + '/1_' + str(index) + '.jpg'
@@ -311,6 +312,7 @@ class Canvas(app.Canvas):
             return np.array([0,0,0,0])
         tmp = 121938.0923
         add = 0
+
         dis = tud.get_min_distance(detections, tmp) + add
         dis1 = tud.get_min_distance(detections1, tmp) + add
         dis2 = tud.get_min_distance(detections2, tmp) + add
@@ -345,7 +347,9 @@ class Canvas(app.Canvas):
 
     def change_point(self):
         if self.imageImdex < self.imagenum:
+            t0 = time.clock()
             x,y,z,t= self.detector_im()
+            print(time.clock() - t0)
             self.program_p['u_position'] =zoom*np.array([x,y,z])
             self.imageImdex = self.imageImdex+1
             self.update()
