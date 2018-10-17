@@ -11,16 +11,23 @@ The two main papers to refer to understand the apriltag algorithm are the follow
 2. ICRA 2011 - [AprilTag: A robust and flexible visual fiducial system](https://ieeexplore.ieee.org/abstract/document/5979561/): this is the paper which explains how the first version of the algorithm works
 
 ## Apriltag python
+This program is base on apriltag without any c extra plugin.And this program encompass tag36h11 tag25h9 and tag16h5.If you han any idea about enchance this program`s function,you can modify whatever you want.
 Just support tag36h11,tag25h9,tag16h5.
 
 ## How to use it
-1. You should install the opencv and other lib.
-2. Now you can run this program with start of test*.py
+1. You should install the opencv and other lib.Your python version must higher that 2.7(not support).
+2. Now you can run files starting with test*.py
+
+
+##Other
+This project is my graduation project.So if you want to use or modify this project,please add some information about me.
+Author:rain
+E-Mail:raindown95@outlook.com
 
 
 ## 关于Apriltag python
-仅支持 tag36h11,tag25h9,tag16h5，如有需要可自行添加。
+仅支持 tag36h11,tag25h9,tag16h5，如有需要可自行添加。本程序不支持python2.7，有需求用户可以自行更改。
 
 ## 如何使用
-1. 首先要安装opencv和其他python包
-2. 直接运行任意一个test开头的文件
+1. 首先要安装opencv和其他python包。
+2. 直接运行任意一个test开头的文件。
