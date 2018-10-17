@@ -19,9 +19,11 @@ Just support tag36h11,tag25h9,tag16h5.
 2. Now you can run files starting with test*.py
 
 
-##Other
-This project is my graduation project.So if you want to use or modify this project,please add some information about me.
+## Other
+This project is my graduation project.So if you want to use or modify this project,please add some information about me. 
+
 Author:rain
+
 E-Mail:raindown95@outlook.com
 
 
