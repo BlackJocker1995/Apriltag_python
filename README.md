@@ -17,6 +17,7 @@ Just support tag36h11,tag25h9,tag16h5.
 ## How to use it
 1. You should install the opencv and other lib.Your python version must higher that 2.7(not support).
 2. Now you can run files starting with test*.py
+3. fold named camtest contains some operation about camera and aprilt,but it still not finished.
 
 
 ## Other
@@ -33,3 +34,4 @@ E-Mail:raindown95@outlook.com
 ## 如何使用
 1. 首先要安装opencv和其他python包。
 2. 直接运行任意一个test开头的文件。
+3. camtest是一些其他有关摄像头的工作，并没有完全完工。
