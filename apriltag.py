@@ -11,6 +11,9 @@ class Apriltag(object):
         self.tagdetector = None
 
     def create_detector(self,family = 'tag36h11',sigma=0.8,nthread =1,debug = False,minarea = 400,thresholding = 'adaptive',downsampling = False):
+        '''
+        init what kind of tag you will detect
+        '''
         self._downsampling = downsampling
         self._quad_sigma = sigma
         self._nthread = nthread
