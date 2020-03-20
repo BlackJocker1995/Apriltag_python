@@ -34,12 +34,12 @@ def main():
                 dis = tud.get_distance(detection.homography,122274)
                 for j in range(4):
                     cv2.line(show,tuple(point[edges[j,0]]),tuple(point[edges[j,1]]),(0,0,255),2)
-                data_point = np.int32(detection.corners)
-                for j in range(4):
-                    cv2.line(show,
-                             tuple(data_point[edges[j, 0]]),
-                             tuple(data_point[edges[j, 1]]),
-                             color=(0,255,0))
+                # data_point = np.int32(detection.corners)
+                # for j in range(4):
+                #     cv2.line(show,
+                #              tuple(data_point[edges[j, 0]]),
+                #              tuple(data_point[edges[j, 1]]),
+                #              color=(0,255,0))
                 print ('dis:' , dis)
 
         ########################
