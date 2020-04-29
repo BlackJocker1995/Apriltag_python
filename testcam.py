@@ -40,7 +40,7 @@ def main():
                 #              tuple(data_point[edges[j, 0]]),
                 #              tuple(data_point[edges[j, 1]]),
                 #              color=(0,255,0))
-                print ('dis:' , dis)
+                # print ('dis:' , dis)
 
         ########################
         num_detections = len(detections)
