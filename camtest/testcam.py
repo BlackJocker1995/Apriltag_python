@@ -11,7 +11,7 @@ def main():
     window = 'Camera'
     cv2.namedWindow(window)
     detector = Apriltag()
-    detector.createDetector(debug=False)
+    detector.create_detector(debug=False)
 
 
     while cap.grab():
@@ -31,15 +31,15 @@ def main():
                               [3, 0]])
             for detection in detections:
                 point = tud.get_pose_point(detection.homography)
-                dis = tud.get_distance(detection.homography,122274)
+                #dis = tud.get_distance(detection.homography,122274)
                 for j in range(4):
                     cv2.line(show,tuple(point[edges[j,0]]),tuple(point[edges[j,1]]),(0,0,255),2)
-                dete_point = np.int32(detection.corners)
-                for j in range(4):
-                    cv2.line(show,
-                             tuple(dete_point[edges[j, 0]]),
-                             tuple(dete_point[edges[j, 1]]),
-                             color=(0,255,0))
+#                 dete_point = np.int32(detection.corners)
+#                 for j in range(4):
+#                     cv2.line(show,
+#                              tuple(dete_point[edges[j, 0]]),
+#                              tuple(dete_point[edges[j, 1]]),
+#                              color=(0,255,0))
                 print ('dis:' , dis)
 
         ########################
