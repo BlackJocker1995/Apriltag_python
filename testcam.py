@@ -31,7 +31,7 @@ def main():
                               [3, 0]])
             for detection in detections:
                 point = tud.get_pose_point(detection.homography)
-                dis = tud.get_distance(detection.homography,122274)
+                #dis = tud.get_distance(detection.homography,122274)
                 for j in range(4):
                     cv2.line(show,tuple(point[edges[j,0]]),tuple(point[edges[j,1]]),(0,0,255),2)
                 # data_point = np.int32(detection.corners)
