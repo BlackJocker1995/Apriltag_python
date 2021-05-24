@@ -184,7 +184,7 @@ class Tag36h11class(Tagclass):
         super().__init__(GLOBAL_TAG36H11,6,debug,hammingdis)
 class Tag16h5class(Tagclass):
     def __init__(self,hammingdis = 2,debug = False):
-        super().__init__(GLOBAL_TAG25H9, 4, debug, hammingdis)
+        super().__init__(GLOBAL_TAG16H5, 4, debug, hammingdis)
 class Tag25h9class(Tagclass):
     def __init__(self,hammingdis = 2,debug = False):
         super().__init__(GLOBAL_TAG25H9, 5, debug, hammingdis)
