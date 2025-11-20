@@ -1,0 +1,19 @@
+[project]
+name = "apriltag-python"
+version = "0.1.0"
+description = "An AprilTag detection library in Python."
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "opencv-python",
+    "matplotlib",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.setuptools]
+py-modules = ["apriltag", "tagDetection", "tagFamilies", "tagUtils", "tagVisual"]
