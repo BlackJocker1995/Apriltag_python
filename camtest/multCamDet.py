@@ -1,197 +1,277 @@
-import cv2
-import numpy as np
 import apriltag
-import tagUtils as tud
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
+import tagUtils as tud
 from mpl_toolkits.mplot3d import Axes3D
-class Multcamdet(object):
-    def __init__(self,n,debug = False):
-        self.n = n
-        self.videocaptures = []
-        self.videowrite = []
-        self.frames = []
-        self.debug = debug
-        self.detector = apriltag.Apriltag().create_detector()
-        self.__filename = []
 
-    def __create_videocapture(self):
+
+class Multicamdet(object):
+    """
+    A class for detecting AprilTags using multiple cameras, either from live video
+    streams or from pre-recorded image files. It can calculate the 3D coordinates
+    of a tag based on distances measured by multiple cameras.
+    """
+
+    def __init__(self, config, debug=False):
         """
-        初始化videocapture
-        :return:None
+        Initializes the multi-camera detector.
+
+        :param config: A dictionary containing configuration parameters.
+                       Expected keys: 'num_cameras', 'resolution', 'distance_const', 'edge_length'.
+        :param debug: If True, enables debug output.
         """
+        self.config = config
+        self.n = config.get("num_cameras", 4)
+        self.debug = debug
+
+        self.videocaptures = []
+        self.videowriters = []
+        self.frames = []
+        self.__filenames = []
+
+        self.detector = apriltag.Apriltag().create_detector()
+
+    def __init_video_captures(self):
+        """Initializes video capture objects for all cameras."""
+        width, height = self.config.get("resolution", (1920, 1080))
         for i in range(self.n):
-            cap = cv2.VideoCapture()
-            flag = cap.open(i)
-            cap.set(3, 1920)
-            cap.set(4, 1080)
-            if(flag):
+            cap = cv2.VideoCapture(i)
+            if cap.isOpened():
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
                 self.videocaptures.append(cap)
             else:
-                print(i ," not open")
-                exit(1)
+                print(f"Warning: Camera {i} could not be opened.")
 
-    def __create_videowrite(self):
+        if not self.videocaptures:
+            print("Error: No cameras were successfully opened.")
+            exit(1)
+        self.n = len(self.videocaptures)  # Update n to the number of opened cameras
+
+    def __init_video_writers(self, output_dir="."):
         """
-        初始化videowriter
-        :return: None
+        Initializes video writer objects for all cameras.
+
+        :param output_dir: Directory to save the output video files.
         """
+        width, height = self.config.get("resolution", (1920, 1080))
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # Use modern FOURCC
         for i in range(self.n):
-            out = cv2.VideoWriter(str(i)+'.avi',cv2.cv.CV_FOURCC('m','p','4','v'),10,(1920,1080))
-            self.videowrite.append(out)
+            filepath = f"{output_dir}/{i}.avi"
+            out = cv2.VideoWriter(filepath, fourcc, 10, (width, height))
+            self.videowriters.append(out)
 
-    def __create_fileRead(self):
+    def __init_file_reader(self, base_path="3dpicture/"):
         """
-        批量读入文件
-        :return:
+        Initializes file paths for reading images.
+
+        :param base_path: The base path where image folders are located.
         """
         for index in range(self.n):
-            filename = '3dpicture/'+str(index)+'_'
-            self.__filename.append(filename)
+            filename = f"{base_path}{index}_"
+            self.__filenames.append(filename)
 
-    def __get_grad(self):
-        """
-        批量获取相机帧
-        get grad using cam
-        :return:
-        """
+    def __grab_frames_from_cams(self):
+        """Grabs the next frame from all video captures. Returns False if any fails."""
         for capture in self.videocaptures:
-            flag = capture.grab()
-            if(flag==False):
+            if not capture.grab():
                 return False
         return True
 
-    def __get_frame(self):
-        """
-        批量抓取图像
-        :return:
-        """
+    def __retrieve_frames_from_cams(self):
+        """Retrieves the grabbed frames from all cameras."""
+        self.frames = []
         for capture in self.videocaptures:
-            flag,frame = capture.retrieve()
+            flag, frame = capture.retrieve()
             if flag:
                 self.frames.append(frame)
             else:
-                print ('can`t get frame')
+                print("Warning: Could not retrieve frame from a camera.")
 
-    def __get_picture(self,index):
+    def __read_frames_from_files(self, image_index):
         """
-        读入对应index的批量图像
-        :param index:
-        :return:
+        Reads frames for a specific index from files.
+
+        :param image_index: The index of the image set to read.
         """
+        self.frames = []
         for i in range(self.n):
-            frame = cv2.imread(self.__filename[i]+str(index)+'.jpg')
-            self.frames.append(frame)
+            filepath = f"{self.__filenames[i]}{image_index}.jpg"
+            frame = cv2.imread(filepath)
+            if frame is not None:
+                self.frames.append(frame)
+            else:
+                print(f"Warning: Could not read image {filepath}")
 
-    def __save_frame_avi(self):
-        for cap,out in zip(self.videocaptures,self.videowrite):
-            flag,frame = cap.retrieve()
-            if flag:
+    def __save_frames_to_video(self):
+        """Saves the retrieved frames to their respective video files."""
+        for frame, out in zip(self.frames, self.videowriters):
+            if frame is not None:
                 out.write(frame)
-            else:
-                print ('can`t get frame')
 
-    def __detector_id_dis(self):
+    def __detect_tags_and_distances(self):
+        """
+        Detects AprilTags in the current batch of frames and calculates their distances.
+
+        :return: A numpy array of [camera_index, tag_id, distance] for the closest tag in each frame.
+        """
         result = []
-        cam = 0
+        cam_index = 0
+        distance_const = self.config.get("distance_const", 121938.1)
+
         for frame in self.frames:
-            gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-            detections = self.detector.detect(gray)
-            num_detections = len(detections)
-            if (num_detections == 0):
+            if frame is None:
+                cam_index += 1
                 continue
-            else:
-                distances = np.zeros(num_detections)
-                tagid = np.zeros(num_detections)
-                i = 0
-                for detection in detections:
-                    dis = tud.get_distance(detection.homography,121938.1)
-                    distances[i] = dis
-                    tagid[i] = detection.tag_id
-                    i = i + 1
-                min_index = np.argmin(distances)
-                result.append([cam,tagid[min_index], distances[min_index]])
-            cam = cam+1
-        self.frames = []  # clear
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            detections = self.detector.detect(gray)
+
+            if not detections:
+                cam_index += 1
+                continue
+
+            distances = []
+            tag_ids = []
+            for detection in detections:
+                dis = tud.get_distance(detection.homography, distance_const)
+                distances.append(dis)
+                tag_ids.append(detection.tag_id)
+
+            min_index = np.argmin(distances)
+            result.append([cam_index, tag_ids[min_index], distances[min_index]])
+            cam_index += 1
+
         return np.array(result)
 
-
-    def detectormult_four_pic(self,num):
-        self.__create_fileRead()
-        ax = plt.subplot(111, projection='3d')
-        ax.set_zlabel('z')
-        ax.set_ylabel('y')
-        ax.set_xlabel('x')
+    def process_from_image_files(self, num_images, base_path="3dpicture/"):
+        """
+        Processes a sequence of images from files to determine 3D coordinates.
+        Assumes 4 cameras are used.
+        """
+        self.__init_file_reader(base_path)
+        ax = plt.subplot(111, projection="3d")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        ax.set_xlim(-20, 120)
         ax.set_ylim(-20, 120)
         ax.set_zlim(-20, 120)
-        ax.set_xlim(-20, 120)
-        for index in range(num):
-            self.__get_picture(index)
-            result = self.__detector_id_dis()
+
+        edge_length = self.config.get("edge_length", 1100)
+
+        for index in range(num_images):
+            self.__read_frames_from_files(index)
+            if len(self.frames) != 4:
+                print(f"Skipping index {index}: Not enough images found (need 4).")
+                continue
+
+            result = self.__detect_tags_and_distances()
+
             if len(result) == 4:
-                x, y, z = tud.sovle_coord(result[0, 2], result[1, 2], result[3, 2], edge=1100)
-                R4 = result[2, 2]
-                z = tud.verify_z(x, y, R4)
-                ax.scatter(x, y, z)
-                print(x, y, z)
+                # This mapping depends on the physical setup of the cameras.
+                # Assuming result[0] is cam0, result[1] is cam1, etc.
+                # And the geometry is (cam0, cam1, cam3) for sovle_coord
+                try:
+                    cam0_dist = result[result[:, 0] == 0][0, 2]
+                    cam1_dist = result[result[:, 0] == 1][0, 2]
+                    cam2_dist = result[result[:, 0] == 2][0, 2]
+                    cam3_dist = result[result[:, 0] == 3][0, 2]
 
+                    x, y, z_est = tud.sovle_coord(
+                        cam0_dist, cam1_dist, cam3_dist, edge=edge_length
+                    )
+                    z = tud.verify_z(x, y, cam2_dist, edge=edge_length)
 
-    def save_four_video(self):
-        self.__create_videocapture()
-        self.__create_videowrite()
-        while(self.__get_grad()):
-            self.__save_frame_avi()
-            k = cv2.waitKey(100/10)
-            print('save')
-            if k == 5:
+                    ax.scatter(x, y, z)
+                    print(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
+                except IndexError:
+                    print(
+                        f"Skipping index {index}: Missing detection from one of the 4 cameras."
+                    )
+
+        plt.show()
+
+    def process_from_live_video(self):
+        """
+        Processes live video from cameras to determine 3D coordinates in real-time.
+        Assumes 4 cameras are used.
+        """
+        self.__init_video_captures()
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
+        ax.set_xlim(-200, 1200)
+        ax.set_ylim(-200, 1200)
+        ax.set_zlim(-200, 1200)
+
+        edge_length = self.config.get("edge_length", 1100)
+
+        while True:
+            if not self.__grab_frames_from_cams():
                 break
-        for out in self.videowrite:
-            out.release()
-    def detectormult(self):
-        self.__create_videocapture()
+            self.__retrieve_frames_from_cams()
 
-        while(self.__get_grad()):
-            self.__get_frame()
-            result = self.__detector_id_dis()
-            #print result
-            if(len(result)==3):
-                aux =  tud.sovle_coord(result[2,2],result[0,2],result[1,2])
-                print( aux )
-                plt.subplot(111, projection='3d')
-                plt.scatter(aux[0], aux[1], aux[2])
-                plt.scatter(25, 58, 3)
-                plt.pause(0.001)
-                #plt.clf()
-    def detectormult_four(self):
-        self.__create_videocapture()
+            result = self.__detect_tags_and_distances()
 
-        while (self.__get_grad()):
-            self.__get_frame()
-            result = self.__detector_id_dis()
-            ax = plt.subplot(111, projection='3d')
+            if len(result) == 4:
+                try:
+                    # Similar to file processing, assuming a specific camera setup.
+                    cam0_dist = result[result[:, 0] == 0][0, 2]
+                    cam1_dist = result[result[:, 0] == 1][0, 2]
+                    cam2_dist = result[result[:, 0] == 2][0, 2]
+                    cam3_dist = result[result[:, 0] == 3][0, 2]
 
-            #fig.canvas.mpl_connect("key_press_event",self.on_key_press)
-            ax.set_zlabel('z')
-            ax.set_ylabel('y')
-            ax.set_xlabel('x')
-            ax.set_ylim(-200,1200)
-            ax.set_zlim(-200, 1200)
-            ax.set_xlim(-200, 1200)
-            if len(result)==4:
-                x,y,z = tud.sovle_coord(result[0, 2], result[1, 2], result[3, 2],edge=1100)
-                R4 = result[2,2]
-                z = tud.verify_z(x,y,R4)
-                ax.scatter(x, y, z)
-                print(x,y,z)
-            plt.pause(0.001)
+                    x, y, _ = tud.sovle_coord(
+                        cam0_dist, cam1_dist, cam3_dist, edge=edge_length
+                    )
+                    z = tud.verify_z(x, y, cam2_dist, edge=edge_length)
+
+                    print(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
+                    ax.scatter(x, y, z)
+                    plt.pause(0.001)
+                except IndexError:
+                    # This can happen if a tag is lost in one of the frames
+                    print("Waiting for detections from all 4 cameras...")
+
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+
+        plt.show()
 
     def __del__(self):
+        """Releases all video capture and writer resources."""
         for cap in self.videocaptures:
             cap.release()
+        for out in self.videowriters:
+            out.release()
+        cv2.destroyAllWindows()
 
 
 def main():
-   camdet = Multcamdet(4)
-   camdet.detectormult_four()
+    # Configuration for the detector
+    config = {
+        "num_cameras": 4,
+        "resolution": (1920, 1080),
+        "distance_const": 121938.1,  # This needs calibration: focal_length_px * tag_size_m
+        "edge_length": 1100,  # The distance between cameras in your setup
+    }
 
-if __name__ == '__main__':
+    # --- To run with live cameras ---
+    # print("Starting live detection from cameras...")
+    # cam_detector = Multicamdet(config)
+    # cam_detector.process_from_live_video()
+
+    # --- To run with pre-recorded images ---
+    print("Starting detection from image files...")
+    file_detector = Multicamdet(config)
+    # Assumes images are in '3dpicture/' and there are 5 sets of them.
+    file_detector.process_from_image_files(num_images=5, base_path="3dpicture/")
+
+
+if __name__ == "__main__":
     main()

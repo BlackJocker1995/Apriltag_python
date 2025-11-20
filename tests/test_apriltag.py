@@ -1,8 +1,9 @@
 # tests/test_apriltag.py
 import pytest
 
-from apriltag import Apriltag
-from tagFamilies import Tag16h5class, Tag25h9class, Tag36h11class
+from apriltag_python import Apriltag
+from apriltag_python.tagFamilies import Tag16h5class, Tag25h9class, Tag36h11class
+
 
 def test_create_detector_family():
     """
@@ -41,5 +42,8 @@ def test_create_detector_unsupported_family():
     assert detector.tagfamily is None, (
         "Tag family should be None for unsupported families"
     )
-    detector.create_detector(family='unsupported_family')
+    detector.create_detector(family="unsupported_family")
+    assert detector.tagfamily is None, (
+        "Tag family should be None for unsupported families"
+    )
     assert detector.tagfamily is None, "Tag family should be None for unsupported families"

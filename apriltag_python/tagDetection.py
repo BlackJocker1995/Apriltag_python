@@ -1,7 +1,8 @@
-import numpy as np
 import cv2
-class TagDetection(object):
+import numpy as np
 
+
+class TagDetection(object):
     def __init__(self):
         self.good = False
         self.obsCode = -1
@@ -18,7 +19,7 @@ class TagDetection(object):
         """
         self._recomputeHomography()
 
-    def addPoint(self,points):
+    def addPoint(self, points):
         """
         add quad`points to detection
         :param points: quad`s points
@@ -30,13 +31,16 @@ class TagDetection(object):
         find Homography
         :return: Homography
         """
-        src = np.array([
-          [-1, -1],
-            [1, -1],
-            [1, 1],
-            [-1, 1],
-        ]).reshape(-1,1,2)
+        src = np.array(
+            [
+                [-1, -1],
+                [1, -1],
+                [1, 1],
+                [-1, 1],
+            ]
+        ).reshape(-1, 1, 2)
+        dst = np.array(self.points)
+        retval, mark = cv2.findHomography(np.array(src), np.array(dst))
         dst = np.array(self.points)
         retval,mark = cv2.findHomography(np.array(src),np.array(dst))
         self.homography = retval
-

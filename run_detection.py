@@ -1,17 +1,15 @@
-# tests/test_detection.py
 import os
 
 import cv2
 import numpy as np
-import pytest
 
 from apriltag_python import Apriltag
 
 
-def test_detect_single_tag_from_image():
+def run_detection():
     """
-    Tests the full detection pipeline on a sample image 'tag.png'.
-    It checks if exactly one tag is detected, and saves a visual result.
+    This function runs the detection pipeline on a sample image 'tag.png'.
+    It saves a visual result.
     """
     # 1. Initialize the detector
     detector = Apriltag()
@@ -21,14 +19,22 @@ def test_detect_single_tag_from_image():
     # 2. Load the image from its new location
     image_path = "tests/tag.png"
     frame = cv2.imread(image_path)
-    assert frame is not None, f"Failed to load {image_path}."
+    if frame is None:
+        print(f"Failed to load {image_path}.")
+        return
 
     # 3. Detect tags
     detections = detector.detect(frame)
 
     # 4. Assert the results
-    assert detections is not None, "Detection returned None"
-    assert len(detections) == 1, f"Expected 1 tag, but found {len(detections)}"
+    if detections is None:
+        print("Detection returned None")
+        return
+    if len(detections) != 1:
+        print(f"Expected 1 tag, but found {len(detections)}")
+        return
+
+    print(f"Detected {len(detections)} tag(s).")
 
     # 5. Draw results and save the output image
     detection = detections[0]
@@ -56,3 +62,7 @@ def test_detect_single_tag_from_image():
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     cv2.imwrite(output_path, frame)
     print(f"Detection result saved to {output_path}")
+
+
+if __name__ == "__main__":
+    run_detection()

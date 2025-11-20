@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
 
-import tagFamilies as tf
+from . import tagFamilies as tf
 
 
 class Apriltag(object):

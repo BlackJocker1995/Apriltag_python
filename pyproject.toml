@@ -15,5 +15,5 @@ dev = [
     "pytest",
 ]
 
-[tool.setuptools]
-py-modules = ["apriltag", "tagDetection", "tagFamilies", "tagUtils", "tagVisual"]
+[tool.setuptools.packages.find]
+where = ["."]

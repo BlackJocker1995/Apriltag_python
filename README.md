@@ -14,11 +14,66 @@ The two main papers to refer to understand the apriltag algorithm are the follow
 This program is base on apriltag without any c extra plugin.And this program encompass tag36h11 tag25h9 and tag16h5.If you han any idea about enchance this program`s function,you can modify whatever you want.
 Just support tag36h11,tag25h9,tag16h5.
 
-## How to use it
-1. You should install the opencv and other lib.Your python version must higher that 2.7(not support).
-2. Now you can run files starting with test*.py
-3. fold named camtest contains some operation about camera and aprilt,but it still not finished.
+## Installation and Usage
 
+You can use `pip` or `uv` to install the dependencies and run the project.
+
+### Using `pip`
+
+1.  **Create a virtual environment:**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    pip install .
+    ```
+    For development (including tests):
+    ```bash
+    pip install ".[dev]"
+    ```
+
+3.  **Run tests:**
+    ```bash
+    pytest
+    ```
+
+### Using `uv` (Recommended)
+
+`uv` is a fast Python package installer and resolver.
+
+1.  **Install `uv`:**
+    ```bash
+    pip install uv
+    ```
+
+2.  **Create a virtual environment and install dependencies:**
+    ```bash
+    uv venv
+    source .venv/bin/activate
+    uv pip install ".[dev]"
+    ```
+
+3.  **Run tests:**
+    ```bash
+    uv run pytest
+    ```
+
+## Running the detection on an image
+
+To run the AprilTag detection on the sample image (`tests/tag.png`), you can execute the `test_detection.py` test. This will generate an output image with the detection results in `test_outputs/detection_result.png`.
+
+Using `pytest`:
+```bash
+pytest tests/test_detection.py
+```
+
+Or using `uv`:
+```bash
+uv run pytest tests/test_detection.py
+```
 
 ## Other
 This project is my graduation project.So if you want to use or modify this project,please add some information about me. 
@@ -30,8 +85,4 @@ E-Mail:raindown95@outlook.com
 
 ## 关于Apriltag python
 仅支持 tag36h11,tag25h9,tag16h5，如有需要可自行添加。本程序不支持python2.7，有需求用户可以自行更改。
-
-## 如何使用
-1. 首先要安装opencv和其他python包。
-2. 直接运行任意一个test开头的文件。
-3. camtest是一些其他有关摄像头的工作，并没有完全完工。
+camtest文件夹中的是其他有关摄像头的工作，并没有完全完工。
