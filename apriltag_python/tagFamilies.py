@@ -1,6 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 from typing import List, Tuple
+from numpy.typing import NDArray
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -178,7 +179,7 @@ class TagFamily(object):
         return tagdection
 
     def decode_quad(
-        self, quads: List[np.ndarray], gray: np.ndarray
+        self, quads: List[np.ndarray], gray: NDArray[np.uint8]
     ) -> List[AprilTagDetection]:
         """
         decode the Quad
