@@ -3,12 +3,13 @@ import time
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from loguru import logger
 from scipy import ndimage
 
 from . import tagFamilies as tf
 
 
-class Apriltag(object):
+class AprilTag(object):
     def __init__(self):
         self.tagfamily = None
         self.tagdetector = None
@@ -33,16 +34,16 @@ class Apriltag(object):
         self._debug = debug
         self._thresholding = thresholding
         if family == "tag36h11":
-            self.tagfamily = tf.Tag36h11class(debug=self._debug)
+            self.tagfamily = tf.Tag36h11Family(debug=self._debug)
         elif family == "tag25h9":
-            self.tagfamily = tf.Tag25h9class(debug=self._debug)
+            self.tagfamily = tf.Tag25h9Family(debug=self._debug)
         elif family == "tag16h5":
-            self.tagfamily = tf.Tag16h5class(debug=self._debug)
+            self.tagfamily = tf.Tag16h5Family(debug=self._debug)
         else:
-            print("Do not support this tag")
+            logger.info("Do not support this tag")
 
     def detect(self, frame):
-        gray = np.array(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY))
+        gray = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
         if self._downsampling:
             gray = cv2.resize(
                 gray,
@@ -53,7 +54,7 @@ class Apriltag(object):
         """
         1 blur
         """
-        img = cv2.GaussianBlur(gray, (3, 3), self._quad_sigma)
+        img = cv2.GaussianBlur(gray, (3, 3), self._quad_sigma, self._quad_sigma)
         if self._debug:
             plt.figure().set_size_inches(19.2, 10.8)
             plt.imshow(img)
@@ -67,7 +68,7 @@ class Apriltag(object):
         if self._thresholding == "canny":
             img = cv2.Canny(img, 50, 350, apertureSize=3)
             if self._debug:
-                print("Canny")
+                logger.info("Canny")
         elif self._thresholding == "adaptive":
             img = np.array(
                 cv2.adaptiveThreshold(
@@ -79,16 +80,16 @@ class Apriltag(object):
             img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
             #            img = cv2.GaussianBlur(img, (7, 7), self._quad_sigma)
             if self._debug:
-                print("Adaptive thresholding")
+                logger.info("Adaptive thresholding")
 
         else:
             if self._debug:
-                print("do not have this methon")
+                logger.info("do not have this methon")
 
         ##################################
         time_end = time.time()
         if self._debug:
-            print("preprocessor cost", time_end - time_start)
+            logger.info("preprocessor cost", time_end - time_start)
             plt.figure().set_size_inches(19.2, 10.8)
             plt.imshow(img)
             plt.gray()
@@ -109,8 +110,8 @@ class Apriltag(object):
         ##################################
         time_end = time.time()
         if self._debug:
-            print(len(contours))
-            print("contours cost", time_end - time_start)
+            logger.info(len(contours))
+            logger.info("contours cost", time_end - time_start)
         if self._debug:
             plt.figure().set_size_inches(19.2, 10.8)
             framecopy = np.copy(frame)
@@ -142,7 +143,7 @@ class Apriltag(object):
         ##################################
         time_end = time.time()
         if self._debug:
-            print("compute convex cost", time_end - time_start)
+            logger.info("compute convex cost", time_end - time_start)
             framecopy = np.copy(frame)
             cv2.drawContours(frame, quads, -1, (0, 255, 0), 2)
             cv2.drawContours(framecopy, hulls, -1, (0, 255, 0), 2)
@@ -156,4 +157,4 @@ class Apriltag(object):
         """
         5 decode and get detections
         """
-        return self.tagfamily.decodeQuad(quads, gray)
+        return self.tagfamily.decode_quad(quads, gray)

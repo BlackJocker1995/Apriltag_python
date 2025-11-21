@@ -4,6 +4,6 @@
 An AprilTag detection library in Python.
 """
 
-from .apriltag import Apriltag
+from .apriltag import AprilTag
 
-__all__ = ["Apriltag"]
+__all__ = ["AprilTag"]

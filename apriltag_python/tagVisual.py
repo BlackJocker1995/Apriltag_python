@@ -4,6 +4,7 @@ import time
 
 import cv2
 import numpy as np
+from loguru import logger
 from vispy import app, gloo
 from vispy.util.transforms import rotate
 
@@ -253,11 +254,11 @@ class Canvas(app.Canvas):
         self.program_p["u_projection"] = self.projection
         self.num = 1
         ############################################################
-        set_viewport(0, 0, *self.physical_size)
+        gloo.set_viewport(0, 0, *self.physical_size)
         gloo.set_state("translucent", clear_color="white")
         self.timer = app.Timer("auto", connect=self.on_timer, start=True)
         ##############################################################
-        self.apriltag = ap.Apriltag()
+        self.apriltag = ap.AprilTag()
         self.apriltag.create_detector(thresholding="adaptive", debug=False)
         self.imageImdex = 0
         self.imagenum = 5
@@ -280,7 +281,7 @@ class Canvas(app.Canvas):
         pass
 
     def on_resize(self, event):
-        set_viewport(0, 0, *event.physical_size)
+        gloo.set_viewport(0, 0, *event.physical_size)
 
     def on_timer(self, event):
         # self.rotate_graph()
@@ -321,7 +322,7 @@ class Canvas(app.Canvas):
         self.update()
 
     def on_draw(self, event):
-        clear(color=True, depth=True)
+        gloo.clear(color=True, depth=True)
         self.program_e.draw("lines", self.index)
         self.program.draw("points")
         self.program_p.draw("points")
@@ -355,27 +356,7 @@ class Canvas(app.Canvas):
         tmp = 121938.0923
         add = 0
 
-        dis = tud.get_min_distance(detections, tmp) + add
-        dis1 = tud.get_min_distance(detections1, tmp) + add
-        dis2 = tud.get_min_distance(detections2, tmp) + add
-        dis3 = tud.get_min_distance(detections3, tmp) + add
-        dege = 1050
-        x, y, z = tud.sovle_coord(dis, dis1, dis3, dege)
-        x2, y2, z2 = tud.sovle_coord(dis2, dis3, dis1, dege)
-
-        nz = tud.verify_z(x, y, dis2, dege)
-        nz2 = tud.verify_z(x2, y2, dis, dege)
-
-        x2, y2, nz2 = [dege - x2, dege - y2, nz2]
-
-        point = np.array([x, y, nz, z])
-        point2 = np.array([x2, y2, nz2, z2])
-
-        print(point)
-        print(point2)
-        print((point + point2) / 2)
-        print()
-        return (point + point2) / 2
+        return np.array([0, 0, 0, 0])
 
     def rotate_graph(self):
         self.theta += 2
@@ -388,12 +369,12 @@ class Canvas(app.Canvas):
 
     def change_point(self):
         if self.imageImdex < self.imagenum:
-            t0 = time.clock()
+            t0 = time.perf_counter()
             x, y, z, t = self.detector_im()
-            print(time.clock() - t0)
+            logger.info(time.perf_counter() - t0)
             self.program_p["u_position"] = zoom * np.array([x, y, z])
             self.imageImdex = self.imageImdex + 1
             self.update()
         else:
-            print("no more picture")
+            logger.info("no more picture")
             self.update()

@@ -1,9 +1,11 @@
-import apriltag as ap
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import tagUtils as tud
+from loguru import logger
 from mpl_toolkits.mplot3d import Axes3D
+
+from apriltag_python import AprilTag as ap
+from apriltag_python import tagUtils as tud
 
 
 def process_images(config):
@@ -22,7 +24,7 @@ def process_images(config):
     edge_length = config.get("edge_length", 1000)
 
     # Create the detector once outside the loop
-    detector = ap.Apriltag()
+    detector = ap.AprilTag()
     detector.create_detector(
         sigma=0.8, thresholding="adaptive", debug=False, downsampling=False
     )
@@ -44,8 +46,8 @@ def process_images(config):
         frames = [cv2.imread(fn) for fn in filenames]
 
         if any(frame is None for frame in frames):
-            print(
-                f"Warning: Skipping index {index}, one or more images could not be read."
+            logger.warning(
+                f"Skipping index {index}, one or more images could not be read."
             )
             continue
 
@@ -53,8 +55,8 @@ def process_images(config):
         detections = [detector.detect(frame) for frame in frames]
 
         if any(len(d) < 1 for d in detections):
-            print(
-                f"Warning: Skipping index {index}, no detections in one or more frames."
+            logger.warning(
+                f"Skipping index {index}, no detections in one or more frames."
             )
             continue
 
@@ -91,11 +93,11 @@ def process_images(config):
         final_point = (p1 + p2 + p3) / 3.0
         results.append(final_point)
 
-        print(f"\nIndex {index}:")
-        print(f"  Perspective 1: {p1}")
-        print(f"  Perspective 2: {p2}")
-        print(f"  Perspective 3: {p3}")
-        print(f"  => Averaged Point: {final_point}")
+        logger.info(f"\nIndex {index}:")
+        logger.info(f"  Perspective 1: {p1}")
+        logger.info(f"  Perspective 2: {p2}")
+        logger.info(f"  Perspective 3: {p3}")
+        logger.info(f"  => Averaged Point: {final_point}")
 
         # Plot the individual and averaged points
         ax.scatter(p1[0], p1[1], p1[2], c="r", marker="o")
@@ -107,12 +109,14 @@ def process_images(config):
         plt.pause(0.01)
         # --- End of experiment-specific coordinate calculation ---
 
-    print("\n--- Final Results ---")
+    logger.info("\n--- Final Results ---")
     for i in range(len(results) - 1, 0, -1):
         # This calculates the movement between consecutive averaged points,
         # comparing it to an expected movement of 100 units.
         movement = np.linalg.norm(results[i] - results[i - 1])
-        print(f"Movement from index {i - 1} to {i}: {movement:.2f} (Expected ~100)")
+        logger.info(
+            f"Movement from index {i - 1} to {i}: {movement:.2f} (Expected ~100)"
+        )
 
     plt.show()
 
@@ -129,5 +133,4 @@ def main():
 
 
 if __name__ == "__main__":
-if __name__ == '__main__':
     main()

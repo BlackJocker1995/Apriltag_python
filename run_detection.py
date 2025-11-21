@@ -2,8 +2,9 @@ import os
 
 import cv2
 import numpy as np
+from loguru import logger
 
-from apriltag_python import Apriltag
+from apriltag_python import AprilTag
 
 
 def run_detection():
@@ -12,7 +13,7 @@ def run_detection():
     It saves a visual result.
     """
     # 1. Initialize the detector
-    detector = Apriltag()
+    detector = AprilTag()
     # Assuming tag.png is from the tag36h11 family, which is a common default
     detector.create_detector(family="tag36h11")
 
@@ -20,7 +21,7 @@ def run_detection():
     image_path = "tests/tag.png"
     frame = cv2.imread(image_path)
     if frame is None:
-        print(f"Failed to load {image_path}.")
+        logger.info(f"Failed to load {image_path}.")
         return
 
     # 3. Detect tags
@@ -28,13 +29,13 @@ def run_detection():
 
     # 4. Assert the results
     if detections is None:
-        print("Detection returned None")
+        logger.info("Detection returned None")
         return
     if len(detections) != 1:
-        print(f"Expected 1 tag, but found {len(detections)}")
+        logger.info(f"Expected 1 tag, but found {len(detections)}")
         return
 
-    print(f"Detected {len(detections)} tag(s).")
+    logger.info(f"Detected {len(detections)} tag(s).")
 
     # 5. Draw results and save the output image
     detection = detections[0]
@@ -61,7 +62,7 @@ def run_detection():
     output_path = "test_outputs/detection_result.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     cv2.imwrite(output_path, frame)
-    print(f"Detection result saved to {output_path}")
+    logger.info(f"Detection result saved to {output_path}")
 
 
 if __name__ == "__main__":

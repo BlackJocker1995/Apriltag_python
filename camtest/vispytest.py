@@ -7,10 +7,12 @@ for rendering a 3D scene and plotting the results of the AprilTag detection
 from pre-recorded images.
 """
 
-from tagVisual import Canvas
+from loguru import logger
 from vispy import app
 
+from apriltag_python.tagVisual import Canvas
+
 if __name__ == "__main__":
-    print("Launching VisPy 3D visualization canvas...")
+    logger.info("Launching VisPy 3D visualization canvas...")
     c = Canvas(title="AprilTag 3D Visualization")
     app.run()

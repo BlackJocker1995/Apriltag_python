@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-class TagDetection(object):
+class AprilTagDetection(object):
     def __init__(self):
         self.good = False
         self.obsCode = -1
@@ -13,20 +13,20 @@ class TagDetection(object):
         self.points = None
         self.homography = None
 
-    def addHomography(self):
+    def add_homography(self):
         """
         find homography
         """
-        self._recomputeHomography()
+        self._recompute_homography()
 
-    def addPoint(self, points):
+    def add_point(self, points):
         """
         add quad`points to detection
         :param points: quad`s points
         """
         self.points = points
 
-    def _recomputeHomography(self):
+    def _recompute_homography(self):
         """
         find Homography
         :return: Homography
@@ -42,5 +42,5 @@ class TagDetection(object):
         dst = np.array(self.points)
         retval, mark = cv2.findHomography(np.array(src), np.array(dst))
         dst = np.array(self.points)
-        retval,mark = cv2.findHomography(np.array(src),np.array(dst))
+        retval, mark = cv2.findHomography(np.array(src), np.array(dst))
         self.homography = retval

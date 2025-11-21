@@ -1,12 +1,14 @@
-import apriltag
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import tagUtils as tud
+from loguru import logger
 from mpl_toolkits.mplot3d import Axes3D
 
+from apriltag_python import AprilTag
+from apriltag_python import tagUtils as tud
 
-class Multicamdet(object):
+
+class MultiCamDet(object):
     """
     A class for detecting AprilTags using multiple cameras, either from live video
     streams or from pre-recorded image files. It can calculate the 3D coordinates
@@ -30,7 +32,7 @@ class Multicamdet(object):
         self.frames = []
         self.__filenames = []
 
-        self.detector = apriltag.Apriltag().create_detector()
+        self.detector = AprilTag().create_detector()
 
     def __init_video_captures(self):
         """Initializes video capture objects for all cameras."""
@@ -42,10 +44,10 @@ class Multicamdet(object):
                 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
                 self.videocaptures.append(cap)
             else:
-                print(f"Warning: Camera {i} could not be opened.")
+                logger.warning(f"Camera {i} could not be opened.")
 
         if not self.videocaptures:
-            print("Error: No cameras were successfully opened.")
+            logger.error("No cameras were successfully opened.")
             exit(1)
         self.n = len(self.videocaptures)  # Update n to the number of opened cameras
 
@@ -87,7 +89,7 @@ class Multicamdet(object):
             if flag:
                 self.frames.append(frame)
             else:
-                print("Warning: Could not retrieve frame from a camera.")
+                logger.warning("Could not retrieve frame from a camera.")
 
     def __read_frames_from_files(self, image_index):
         """
@@ -102,7 +104,7 @@ class Multicamdet(object):
             if frame is not None:
                 self.frames.append(frame)
             else:
-                print(f"Warning: Could not read image {filepath}")
+                logger.warning(f"Could not read image {filepath}")
 
     def __save_frames_to_video(self):
         """Saves the retrieved frames to their respective video files."""
@@ -163,8 +165,10 @@ class Multicamdet(object):
 
         for index in range(num_images):
             self.__read_frames_from_files(index)
-            if len(self.frames) != 4:
-                print(f"Skipping index {index}: Not enough images found (need 4).")
+                logger.info(
+                    f"Skipping index {index}: Not enough images found (need 4)."
+                )
+                logger.info(f"Skipping index {index}: Not enough images found (need 4).")
                 continue
 
             result = self.__detect_tags_and_distances()
@@ -185,9 +189,9 @@ class Multicamdet(object):
                     z = tud.verify_z(x, y, cam2_dist, edge=edge_length)
 
                     ax.scatter(x, y, z)
-                    print(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
+                    logger.info(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
                 except IndexError:
-                    print(
+                    logger.info(
                         f"Skipping index {index}: Missing detection from one of the 4 cameras."
                     )
 
@@ -231,12 +235,12 @@ class Multicamdet(object):
                     )
                     z = tud.verify_z(x, y, cam2_dist, edge=edge_length)
 
-                    print(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
+                    logger.info(f"Coordinates: x={x:.2f}, y={y:.2f}, z={z:.2f}")
                     ax.scatter(x, y, z)
                     plt.pause(0.001)
                 except IndexError:
                     # This can happen if a tag is lost in one of the frames
-                    print("Waiting for detections from all 4 cameras...")
+                    logger.info("Waiting for detections from all 4 cameras...")
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
@@ -262,13 +266,13 @@ def main():
     }
 
     # --- To run with live cameras ---
-    # print("Starting live detection from cameras...")
-    # cam_detector = Multicamdet(config)
+    # logger.info("Starting live detection from cameras...")
+    # cam_detector = MultiCamDet(config)
     # cam_detector.process_from_live_video()
 
     # --- To run with pre-recorded images ---
-    print("Starting detection from image files...")
-    file_detector = Multicamdet(config)
+    logger.info("Starting detection from image files...")
+    file_detector = MultiCamDet(config)
     # Assumes images are in '3dpicture/' and there are 5 sets of them.
     file_detector.process_from_image_files(num_images=5, base_path="3dpicture/")
 

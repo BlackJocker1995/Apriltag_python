@@ -4,8 +4,9 @@ import os
 import cv2
 import numpy as np
 import pytest
+from loguru import logger
 
-from apriltag_python import Apriltag
+from apriltag_python import AprilTag
 
 
 def test_detect_single_tag_from_image():
@@ -14,7 +15,7 @@ def test_detect_single_tag_from_image():
     It checks if exactly one tag is detected, and saves a visual result.
     """
     # 1. Initialize the detector
-    detector = Apriltag()
+    detector = AprilTag()
     # Assuming tag.png is from the tag36h11 family, which is a common default
     detector.create_detector(family="tag36h11")
 
@@ -55,4 +56,4 @@ def test_detect_single_tag_from_image():
     output_path = "test_outputs/detection_result.png"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     cv2.imwrite(output_path, frame)
-    print(f"Detection result saved to {output_path}")
+    logger.info(f"Detection result saved to {output_path}")

@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .tagDetection import TagDetection
+from .tagDetection import AprilTagDetection
 
 
 def _load_tag_codes(family):
@@ -20,7 +20,7 @@ def _load_tag_codes(family):
     return codes
 
 
-class Tagclass(object):
+class TagFamily(object):
     def __init__(self, tagcode, d, debug=False, hammingdis=3):
         self._tagcode = tagcode
         self._d = d
@@ -120,7 +120,7 @@ class Tagclass(object):
         hw = (tmp33 / tmp8) * relativePoint[0] + (tmp35 / tmp8) * relativePoint[1] + 1
         return np.array([hy / hw, hx / hw])
 
-    def _rotate90(self, w, d):
+    def _rotate_90(self, w, d):
         """
         rotate the code(bin) 90
         :param w: code(int)
@@ -161,8 +161,8 @@ class Tagclass(object):
                     bestcode = tag
                     bestrotation = r
                 index += 1
-            rcodes = self._rotate90(rcodes, self._d)
-        tagdection = TagDetection()
+            rcodes = self._rotate_90(rcodes, self._d)
+        tagdection = AprilTagDetection()
         tagdection.id = bestid
         tagdection.hammingDistance = besthamming
         tagdection.obsCode = tagcode
@@ -170,10 +170,10 @@ class Tagclass(object):
         tagdection.rotation = bestrotation
         if besthamming <= self._hammingdis:
             tagdection.good = True
-            tagdection.addPoint(points)
+            tagdection.add_point(points)
         return tagdection
 
-    def decodeQuad(self, quads, gray):
+    def decode_quad(self, quads, gray):
         """
         decode the Quad
         :param quads: array of quad which have four points
@@ -218,7 +218,7 @@ class Tagclass(object):
             tagcode = hex(tagcode)
             detection = self._decode(tagcode, quad)
             if detection.good == True:
-                detection.addHomography()
+                detection.add_homography()
                 detections.append(detection)
         if self._debug and len(points) != 0:
             plt.figure().set_size_inches(19.2, 10.8)
@@ -236,16 +236,16 @@ class Tagclass(object):
         return detections
 
 
-class Tag36h11class(Tagclass):
+class Tag36h11Family(TagFamily):
     def __init__(self, hammingdis=3, debug=False):
         super().__init__(_load_tag_codes("tag36h11"), 6, debug, hammingdis)
 
 
-class Tag16h5class(Tagclass):
+class Tag16h5Family(TagFamily):
     def __init__(self, hammingdis=2, debug=False):
         super().__init__(_load_tag_codes("tag16h5"), 4, debug, hammingdis)
 
 
-class Tag25h9class(Tagclass):
+class Tag25h9Family(TagFamily):
     def __init__(self, hammingdis=2, debug=False):
         super().__init__(_load_tag_codes("tag25h9"), 5, debug, hammingdis)
