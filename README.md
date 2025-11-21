@@ -74,15 +74,3 @@ Or using `uv`:
 ```bash
 uv run pytest tests/test_detection.py
 ```
-
-## Other
-This project is my graduation project.So if you want to use or modify this project,please add some information about me. 
-
-Author:rain
-
-E-Mail:raindown95@outlook.com
-
-
-## 关于Apriltag python
-仅支持 tag36h11,tag25h9,tag16h5，如有需要可自行添加。本程序不支持python2.7，有需求用户可以自行更改。
-camtest文件夹中的是其他有关摄像头的工作，并没有完全完工。

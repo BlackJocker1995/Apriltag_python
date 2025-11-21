@@ -1,10 +1,10 @@
 import os
 import xml.etree.ElementTree as ET
 from typing import List, Tuple
-from numpy.typing import NDArray
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.typing import NDArray
 
 from .tagDetection import AprilTagDetection
 
