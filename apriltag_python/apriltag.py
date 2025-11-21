@@ -40,21 +40,24 @@ class AprilTag(object):
         elif family == "tag16h5":
             self.tagfamily = tf.Tag16h5Family(debug=self._debug)
         else:
-            logger.info("Do not support this tag")
+            logger.warning("Do not support this tag")
 
     def detect(self, frame):
-        gray = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+        if self.tagfamily is None:
+            logger.error("Tag family not initialized. Call create_detector first.")
+            return []
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if self._downsampling:
             gray = cv2.resize(
                 gray,
                 (int(gray.shape[1] / 2), int(gray.shape[0] / 2)),
                 interpolation=cv2.INTER_AREA,
             )
-            gray = ndimage.zoom(gray, 2, order=0)
+            gray = np.asarray(ndimage.zoom(gray, 2, order=0), dtype=np.uint8)
         """
         1 blur
         """
-        img = cv2.GaussianBlur(gray, (3, 3), self._quad_sigma, self._quad_sigma)
+        img = cv2.GaussianBlur(gray, (3, 3), self._quad_sigma)
         if self._debug:
             plt.figure().set_size_inches(19.2, 10.8)
             plt.imshow(img)

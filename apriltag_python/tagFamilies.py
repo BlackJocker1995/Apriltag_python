@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +8,7 @@ import numpy as np
 from .tagDetection import AprilTagDetection
 
 
-def _load_tag_codes(family):
+def _load_tag_codes(family: str) -> List[int]:
     codes = []
     # Get the directory of the current script
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,19 +17,24 @@ def _load_tag_codes(family):
     tree = ET.parse(xml_file)
     root = tree.getroot()
     for code_h in root.findall("code_h"):
-        codes.append(int(code_h.text, 16))
+        if code_h.text is not None:
+            codes.append(int(code_h.text, 16))
     return codes
 
 
 class TagFamily(object):
-    def __init__(self, tagcode, d, debug=False, hammingdis=3):
+    def __init__(
+        self, tagcode: List[int], d: int, debug: bool = False, hammingdis: int = 3
+    ) -> None:
         self._tagcode = tagcode
         self._d = d
         self._blackBorder = 1
         self._debug = debug
         self._hammingdis = hammingdis
 
-    def _interpolate(self, p, relativePoint):
+    def _interpolate(
+        self, p: np.ndarray, relativePoint: Tuple[float, float]
+    ) -> np.ndarray:
         """
         calculate real points accoding relative points
         :param p: quad` four points
@@ -120,7 +126,7 @@ class TagFamily(object):
         hw = (tmp33 / tmp8) * relativePoint[0] + (tmp35 / tmp8) * relativePoint[1] + 1
         return np.array([hy / hw, hx / hw])
 
-    def _rotate_90(self, w, d):
+    def _rotate_90(self, w: int, d: int) -> int:
         """
         rotate the code(bin) 90
         :param w: code(int)
@@ -136,15 +142,13 @@ class TagFamily(object):
                     wr |= 1
         return wr
 
-    def _decode(self, tagcode, points):
+    def _decode(self, tagcode: int, points: np.ndarray) -> AprilTagDetection:
         """
-        decode the tagcode(bin) and calculate distances between code you get and family`s code you own
-        :param tagcode: tagcode(binary)
+        decode the tagcode(int) and calculate distances between code you get and family`s code you own
+        :param tagcode: tagcode (integer)
         :param points: quad(four point)
         :return:detection
         """
-        tagcode = int(tagcode, 16)  # uncode the code to hex
-
         bestid = -1
         besthamming = 255
         bestrotation = -1
@@ -173,7 +177,9 @@ class TagFamily(object):
             tagdection.add_point(points)
         return tagdection
 
-    def decode_quad(self, quads, gray):
+    def decode_quad(
+        self, quads: List[np.ndarray], gray: np.ndarray
+    ) -> List[AprilTagDetection]:
         """
         decode the Quad
         :param quads: array of quad which have four points
@@ -184,7 +190,7 @@ class TagFamily(object):
         points = []
         whitepoint = []
         for quad in quads:
-            dd = 2 * self._blackBorder + self._d  # tagFamily.d
+            dd = 2 * self._blackBorder + self._d
             blackvalue = []
             whitevalue = []
             tagcode = 0
@@ -192,7 +198,10 @@ class TagFamily(object):
                 for ix in range(dd):
                     x = (ix + 0.5) / dd
                     y = (iy + 0.5) / dd
-                    point = np.int32(self._interpolate(quad, (x, y)))
+                    point_coords = np.round(self._interpolate(quad, (x, y))).astype(
+                        np.int32
+                    )
+                    point = (int(point_coords[0]), int(point_coords[1]))
                     points.append(point)
                     value = gray[point[0], point[1]]
                     if (iy == 0 or iy == dd - 1) or (ix == 0 or ix == dd - 1):
@@ -208,16 +217,18 @@ class TagFamily(object):
                         continue
                     x = (ix + 0.5) / dd
                     y = (iy + 0.5) / dd
-                    point = np.int32(self._interpolate(quad, (x, y)))
+                    point_coords = np.round(self._interpolate(quad, (x, y))).astype(
+                        np.int32
+                    )
+                    point = (int(point_coords[0]), int(point_coords[1]))
                     value = gray[point[0], point[1]]
                     tagcode = tagcode << 1
                     if value > threshold:
                         if self._debug:
                             whitepoint.append(point)
                         tagcode |= 1
-            tagcode = hex(tagcode)
             detection = self._decode(tagcode, quad)
-            if detection.good == True:
+            if detection.good:
                 detection.add_homography()
                 detections.append(detection)
         if self._debug and len(points) != 0:
@@ -237,15 +248,15 @@ class TagFamily(object):
 
 
 class Tag36h11Family(TagFamily):
-    def __init__(self, hammingdis=3, debug=False):
+    def __init__(self, hammingdis: int = 3, debug: bool = False) -> None:
         super().__init__(_load_tag_codes("tag36h11"), 6, debug, hammingdis)
 
 
 class Tag16h5Family(TagFamily):
-    def __init__(self, hammingdis=2, debug=False):
+    def __init__(self, hammingdis: int = 2, debug: bool = False) -> None:
         super().__init__(_load_tag_codes("tag16h5"), 4, debug, hammingdis)
 
 
 class Tag25h9Family(TagFamily):
-    def __init__(self, hammingdis=2, debug=False):
+    def __init__(self, hammingdis: int = 2, debug: bool = False) -> None:
         super().__init__(_load_tag_codes("tag25h9"), 5, debug, hammingdis)

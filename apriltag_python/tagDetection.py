@@ -40,7 +40,7 @@ class AprilTagDetection(object):
             ]
         ).reshape(-1, 1, 2)
         dst = np.array(self.points)
-        retval, mark = cv2.findHomography(np.array(src), np.array(dst))
+        retval, _ = cv2.findHomography(np.array(src), np.array(dst))
         dst = np.array(self.points)
-        retval, mark = cv2.findHomography(np.array(src), np.array(dst))
+        retval, _ = cv2.findHomography(np.array(src), np.array(dst))
         self.homography = retval
